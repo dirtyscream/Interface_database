@@ -105,7 +105,9 @@ int main(int argc, char* argv[]) {
                 std::cout << "Users saved to database." << std::endl;
                 break;
             case 6: {
-                std::string username, email, phone_number;
+                std::string username;
+                std::string email;
+                std::string phone_number;
                 std::cout << "Enter username to filter (leave empty to skip): ";
                 std::cin.ignore();
                 std::getline(std::cin, username);

@@ -1,6 +1,7 @@
 #include <chrono>
 #include <ctime>
 #include <iostream>
+#include <string>
 
 class User {
    private:
@@ -28,7 +29,11 @@ class User {
 
     std::string get_registration_time() const {
         auto time = std::chrono::system_clock::to_time_t(registration_time);
-        return std::ctime(&time);
+
+        char buffer[26];
+        ctime_r(&time, buffer);
+
+        return std::string(buffer);
     }
 
     int get_id() const { return id; }

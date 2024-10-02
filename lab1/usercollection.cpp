@@ -26,7 +26,7 @@ class UserCollection {
                 return user->get_id() == id;
             });
         if (it == users.end()) {
-            throw UserNotFoundException("User not found for deletion!");
+            std::cout << "User not found\n";
         }
         users.erase(it.begin(), it.end());
     }
@@ -44,7 +44,6 @@ class UserCollection {
         }
     }
 
-    // Теперь функция const
     std::vector<User*> filter_users(
         const std::string_view username = "", const std::string_view email = "",
         const std::string_view phone_number = "") const {
