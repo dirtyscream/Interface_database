@@ -7,12 +7,6 @@
 
 #include "user.cpp"
 
-class UserNotFoundException : public std::runtime_error {
-   public:
-    explicit UserNotFoundException(const std::string& message)
-        : std::runtime_error(message) {}
-};
-
 class UserCollection {
    private:
     std::vector<std::unique_ptr<User>> users;
@@ -48,7 +42,6 @@ class UserCollection {
                 return;
             }
         }
-        throw UserNotFoundException("User not found for update!");
     }
 
     // Теперь функция const
