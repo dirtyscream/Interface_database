@@ -47,12 +47,12 @@ void update_user(UserCollection& user_collection) {
     std::cin >> phone_number;
     std::cout << "Enter new email: ";
     std::cin >> email;
-    try {
-        user_collection.update_user(id, username, password, phone_number,
-                                    email);
+
+    if (!user_collection.update_user(id, username, password, phone_number,
+                                     email)) {
+        std::cerr << "Error: Unable to update user with ID " << id << std::endl;
+    } else {
         std::cout << "User updated successfully." << std::endl;
-    } catch (exit(-4)) {
-        std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
@@ -60,15 +60,15 @@ void delete_user(UserCollection& user_collection) {
     int id;
     std::cout << "Enter id to delete: ";
     std::cin >> id;
-    try {
-        user_collection.delete_user(id);
+
+    if (!user_collection.delete_user(id)) {
+        std::cerr << "Error: Unable to delete user with ID " << id << std::endl;
+    } else {
         std::cout << "User deleted successfully." << std::endl;
-    } catch (exit(-3)) {
-        std::cerr << "Error: " << e.what() << std::endl;
     }
 }
 
-void save_users_to_db(UserCollection& user_collection, Database& db) {
+void save_users_to_db(UserCollection& user_collection, sqlite3* db) {
     user_collection.save_users_to_db(db);
     std::cout << "Users saved to database." << std::endl;
 }
@@ -102,7 +102,7 @@ void filter_users(UserCollection& user_collection) {
     }
 }
 
-void handle_choice(int choice, UserCollection& user_collection, Database& db) {
+void handle_choice(int choice, UserCollection& user_collection, sqlite3* db) {
     switch (choice) {
         case 1:
             print_all_users(user_collection);
@@ -163,7 +163,7 @@ int main(int argc, char* argv[]) {
         std::cout << "7) Exit\n";
         std::cout << "Choose an option: ";
         std::cin >> choice;
-        handle_choice(choice);
+        handle_choice(choice, user_collection, db);
     } while (choice != 7);
 
     sqlite3_close(db);

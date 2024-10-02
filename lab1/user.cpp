@@ -29,11 +29,7 @@ class User {
 
     std::string get_registration_time() const {
         auto time = std::chrono::system_clock::to_time_t(registration_time);
-
-        std::string buffer;
-        ctime_r(&time, buffer);
-
-        return std::string(buffer);
+        return std::ctime(&time);
     }
 
     int get_id() const { return id; }

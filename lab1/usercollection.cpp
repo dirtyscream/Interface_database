@@ -20,18 +20,19 @@ class UserCollection {
                                                   phone_number, email));
     }
 
-    void delete_user(int id) {
-        auto it = std::ranges::remove_if(
-            users, [id](const std::unique_ptr<User>& user) {
-                return user->get_id() == id;
-            });
-        if (it == users.end()) {
-            std::cout << "User not found\n";
+    bool delete_user(int id) {
+        for (size_t i = 0; i < users.size(); ++i) {
+            if (users[i]->get_id() == id) {
+                users.erase(users.begin() + i);
+                std::cout << "User deleted successfully.\n";
+                return true;
+            }
         }
-        users.erase(it.begin(), it.end());
+        std::cout << "User not found\n";
+        return false;
     }
 
-    void update_user(int id, const std::string& username,
+    bool update_user(int id, const std::string& username,
                      const std::string& password,
                      const std::string& phone_number,
                      const std::string& email) {
@@ -39,9 +40,10 @@ class UserCollection {
             if (user->get_id() == id) {
                 user = std::make_unique<User>(id, username, password,
                                               phone_number, email);
-                return;
+                return true;
             }
         }
+        return false;
     }
 
     std::vector<User*> filter_users(
