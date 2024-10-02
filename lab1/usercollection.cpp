@@ -71,7 +71,10 @@ class UserCollection {
     }
 
     void input_user_data() {
-        std::string username, password, phone_number, email;
+        std::string username;
+        std::string password;
+        std::string phone_number;
+        std::string email;
         int id = users.size() + 1;
         std::cout << "Enter username: ";
         std::cin >> username;
@@ -90,7 +93,7 @@ class UserCollection {
         sqlite3_stmt* stmt;
 
         if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
-            throw std::runtime_error("Failed to prepare statement.");
+            exit(-1);
         }
 
         while (sqlite3_step(stmt) == SQLITE_ROW) {
@@ -121,7 +124,7 @@ class UserCollection {
 
             if (sqlite3_prepare_v2(db, sql_insert, -1, &stmt, nullptr) !=
                 SQLITE_OK) {
-                throw std::runtime_error("Failed to prepare insert statement.");
+                exit(-2);
             }
             sqlite3_bind_int(stmt, 1, user->get_id());
             sqlite3_bind_text(stmt, 2, user->get_username().c_str(), -1,
