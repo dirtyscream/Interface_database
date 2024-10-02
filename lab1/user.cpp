@@ -26,12 +26,6 @@ class User {
     std::string get_password() const { return password; }
     std::string get_phone_number() const { return phone_number; }
     std::string get_email() const { return email; }
-
-    std::string get_registration_time() const {
-        auto time = std::chrono::system_clock::to_time_t(registration_time);
-        return std::ctime(&time);
-    }
-
     int get_id() const { return id; }
     User(const User&) = delete;
     User& operator=(const User&) = delete;

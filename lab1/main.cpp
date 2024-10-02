@@ -96,7 +96,6 @@ void filter_users(const UserCollection& user_collection) {
                       << "Username: " << user->get_username() << "\n"
                       << "Email: " << user->get_email() << ", "
                       << "Phone: " << user->get_phone_number() << "\n"
-                      << "Registration Time: " << user->get_registration_time()
                       << "\n";
         }
     }
