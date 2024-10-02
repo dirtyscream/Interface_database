@@ -25,18 +25,10 @@ class UserCollection {
         const std::string_view phone_number = "") const {
         std::vector<User*> result;
         for (const auto& user : users) {
-            bool matches = true;
-            if (!username.empty() && user->get_username() != username) {
-                matches = false;
-            }
-            if (!email.empty() && user->get_email() != email) {
-                matches = false;
-            }
-            if (!phone_number.empty() &&
-                user->get_phone_number() != phone_number) {
-                matches = false;
-            }
-            if (matches) {
+            if ((username.empty() || user->get_username() == username) &&
+                (email.empty() || user->get_email() == email) &&
+                (phone_number.empty() ||
+                 user->get_phone_number() == phone_number)) {
                 result.push_back(user.get());
             }
         }
@@ -97,8 +89,8 @@ class UserCollection {
         const char* sql =
             "SELECT id, username, password, phone_number, email FROM Users;";
         sqlite3_stmt* stmt;
-        if (int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr);
-            rc != SQLITE_OK) {
+
+        if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
             throw std::runtime_error("Failed to prepare statement.");
         }
 
@@ -127,7 +119,11 @@ class UserCollection {
                 "email) "
                 "VALUES (?, ?, ?, ?, ?);";
             sqlite3_stmt* stmt;
-            sqlite3_prepare_v2(db, sql_insert, -1, &stmt, nullptr);
+
+            if (sqlite3_prepare_v2(db, sql_insert, -1, &stmt, nullptr) !=
+                SQLITE_OK) {
+                throw std::runtime_error("Failed to prepare insert statement.");
+            }
             sqlite3_bind_int(stmt, 1, user->get_id());
             sqlite3_bind_text(stmt, 2, user->get_username().c_str(), -1,
                               SQLITE_STATIC);
