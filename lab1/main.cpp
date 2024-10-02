@@ -35,7 +35,10 @@ void update_user(UserCollection& user_collection) {
     int id;
     std::cout << "Enter id to update: ";
     std::cin >> id;
-    std::string username, password, phone_number, email;
+    std::string username;
+    std::string password;
+    std::string phone_number;
+    std::string email;
     std::cout << "Enter new username: ";
     std::cin >> username;
     std::cout << "Enter new password: ";
@@ -48,7 +51,7 @@ void update_user(UserCollection& user_collection) {
         user_collection.update_user(id, username, password, phone_number,
                                     email);
         std::cout << "User updated successfully." << std::endl;
-    } catch (const std::runtime_error& e) {
+    } catch (exit(-4)) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
@@ -60,7 +63,7 @@ void delete_user(UserCollection& user_collection) {
     try {
         user_collection.delete_user(id);
         std::cout << "User deleted successfully." << std::endl;
-    } catch (const std::runtime_error& e) {
+    } catch (exit(-3)) {
         std::cerr << "Error: " << e.what() << std::endl;
     }
 }
@@ -71,7 +74,9 @@ void save_users_to_db(UserCollection& user_collection, Database& db) {
 }
 
 void filter_users(UserCollection& user_collection) {
-    std::string username, email, phone_number;
+    std::string username;
+    std::string email;
+    std::string phone_number;
     std::cout << "Enter username to filter (leave empty to skip): ";
     std::cin.ignore();
     std::getline(std::cin, username);
