@@ -1,4 +1,4 @@
-# Игнорировать директорию .vscode
+# Игнорировать директорию .vscode .sonarlint
 .vscode/
 .sonarlint/
 
