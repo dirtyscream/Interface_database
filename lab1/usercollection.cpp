@@ -7,6 +7,12 @@
 
 #include "user.cpp"
 
+class UserNotFoundException : public std::runtime_error {
+   public:
+    explicit UserNotFoundException(const std::string& message)
+        : std::runtime_error(message) {}
+};
+
 class UserCollection {
    private:
     std::vector<std::unique_ptr<User>> users;
@@ -20,19 +26,15 @@ class UserCollection {
                                                   phone_number, email));
     }
 
-    std::vector<User*> filter_users(
-        const std::string_view username = "", const std::string_view email = "",
-        const std::string_view phone_number = "") const {
-        std::vector<User*> result;
-        for (const auto& user : users) {
-            if ((username.empty() || user->get_username() == username) &&
-                (email.empty() || user->get_email() == email) &&
-                (phone_number.empty() ||
-                 user->get_phone_number() == phone_number)) {
-                result.push_back(user.get());
-            }
+    void delete_user(int id) {
+        auto it = std::ranges::remove_if(
+            users, [id](const std::unique_ptr<User>& user) {
+                return user->get_id() == id;
+            });
+        if (it == users.end()) {
+            throw UserNotFoundException("User not found for deletion!");
         }
-        return result;
+        users.erase(it.begin(), it.end());
     }
 
     void update_user(int id, const std::string& username,
@@ -46,18 +48,23 @@ class UserCollection {
                 return;
             }
         }
-        throw std::runtime_error("User not found for update!");
+        throw UserNotFoundException("User not found for update!");
     }
 
-    void delete_user(int id) {
-        auto it = std::remove_if(users.begin(), users.end(),
-                                 [id](const std::unique_ptr<User>& user) {
-                                     return user->get_id() == id;
-                                 });
-        if (it == users.end()) {
-            throw std::runtime_error("User not found for deletion!");
+    // Теперь функция const
+    std::vector<User*> filter_users(
+        const std::string_view username = "", const std::string_view email = "",
+        const std::string_view phone_number = "") const {
+        std::vector<User*> result;
+        for (const auto& user : users) {
+            if ((username.empty() || user->get_username() == username) &&
+                (email.empty() || user->get_email() == email) &&
+                (phone_number.empty() ||
+                 user->get_phone_number() == phone_number)) {
+                result.push_back(user.get());
+            }
         }
-        users.erase(it, users.end());
+        return result;
     }
 
     void print_all_users() const {

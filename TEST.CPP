@@ -2,11 +2,19 @@
 
 #include <algorithm>
 #include <chrono>
+#include <exception>
 #include <iostream>
 #include <memory>
+#include <ranges>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+class UserNotFoundException : public std::runtime_error {
+   public:
+    explicit UserNotFoundException(const std::string& message)
+        : std::runtime_error(message) {}
+};
 
 class User {
    private:
@@ -15,7 +23,8 @@ class User {
     std::string password;
     std::string phone_number;
     std::string email;
-    std::chrono::system_clock::time_point registration_time;
+    std::chrono::system_clock::time_point registration_time =
+        std::chrono::system_clock::now();  // Инициализация в классе
 
    public:
     User(int id, const std::string& username, const std::string& password,
@@ -24,21 +33,17 @@ class User {
           username(username),
           password(password),
           phone_number(phone_number),
-          email(email),
-          registration_time(std::chrono::system_clock::now()) {}
+          email(email) {}
 
     std::string get_username() const { return username; }
     std::string get_password() const { return password; }
     std::string get_phone_number() const { return phone_number; }
     std::string get_email() const { return email; }
 
+    // Заменено на std::chrono
     std::string get_registration_time() const {
         auto time = std::chrono::system_clock::to_time_t(registration_time);
-        std::tm buf{};
-        localtime_r(&time, &buf);
-        char time_str[100];
-        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &buf);
-        return time_str;
+        return std::ctime(&time);
     }
 
     int get_id() const { return id; }
@@ -75,19 +80,15 @@ class UserCollection {
                                                   phone_number, email));
     }
 
-    std::vector<User*> filter_users(
-        const std::string_view username = "", const std::string_view email = "",
-        const std::string_view phone_number = "") const {
-        std::vector<User*> result;
-        for (const auto& user : users) {
-            if ((username.empty() || user->get_username() == username) &&
-                (email.empty() || user->get_email() == email) &&
-                (phone_number.empty() ||
-                 user->get_phone_number() == phone_number)) {
-                result.push_back(user.get());
-            }
+    void delete_user(int id) {
+        auto it = std::ranges::remove_if(
+            users, [id](const std::unique_ptr<User>& user) {
+                return user->get_id() == id;
+            });
+        if (it == users.end()) {
+            throw UserNotFoundException("User not found for deletion!");
         }
-        return result;
+        users.erase(it.begin(), it.end());
     }
 
     void update_user(int id, const std::string& username,
@@ -101,18 +102,23 @@ class UserCollection {
                 return;
             }
         }
-        throw std::runtime_error("User not found for update!");
+        throw UserNotFoundException("User not found for update!");
     }
 
-    void delete_user(int id) {
-        auto it = std::remove_if(users.begin(), users.end(),
-                                 [id](const std::unique_ptr<User>& user) {
-                                     return user->get_id() == id;
-                                 });
-        if (it == users.end()) {
-            throw std::runtime_error("User not found for deletion!");
+    // Теперь функция const
+    std::vector<User*> filter_users(
+        const std::string_view username = "", const std::string_view email = "",
+        const std::string_view phone_number = "") const {
+        std::vector<User*> result;
+        for (const auto& user : users) {
+            if ((username.empty() || user->get_username() == username) &&
+                (email.empty() || user->get_email() == email) &&
+                (phone_number.empty() ||
+                 user->get_phone_number() == phone_number)) {
+                result.push_back(user.get());
+            }
         }
-        users.erase(it, users.end());
+        return result;
     }
 
     void print_all_users() const {
@@ -199,6 +205,8 @@ int main(int argc, char* argv[]) {
         std::cout << "Usage: " << argv[0] << " <database_name>\n";
         return 1;
     }
+    std::string username, password, phone_number, email;
+    int id;
 
     const char* db_name = argv[1];
     sqlite3* db;
@@ -234,11 +242,9 @@ int main(int argc, char* argv[]) {
             case 2:
                 user_collection.input_user_data();
                 break;
-            case 3: {
-                int id;
+            case 3:
                 std::cout << "Enter id to update: ";
                 std::cin >> id;
-                std::string username, password, phone_number, email;
                 std::cout << "Enter new username: ";
                 std::cin >> username;
                 std::cout << "Enter new password: ";
@@ -255,9 +261,8 @@ int main(int argc, char* argv[]) {
                     std::cerr << "Error: " << e.what() << std::endl;
                 }
                 break;
-            }
-            case 4: {
-                int id;
+
+            case 4:
                 std::cout << "Enter id to delete: ";
                 std::cin >> id;
                 try {
@@ -267,13 +272,12 @@ int main(int argc, char* argv[]) {
                     std::cerr << "Error: " << e.what() << std::endl;
                 }
                 break;
-            }
+
             case 5:
                 user_collection.save_users_to_db(db);
                 std::cout << "Users saved to database." << std::endl;
                 break;
-            case 6: {
-                std::string username, email, phone_number;
+            case 6:
                 std::cout << "Enter username to filter (leave empty to skip): ";
                 std::cin.ignore();
                 std::getline(std::cin, username);
@@ -299,7 +303,7 @@ int main(int argc, char* argv[]) {
                     }
                 }
                 break;
-            }
+
             case 7:
                 break;
             default:

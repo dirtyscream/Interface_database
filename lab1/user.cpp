@@ -9,7 +9,8 @@ class User {
     std::string password;
     std::string phone_number;
     std::string email;
-    std::chrono::system_clock::time_point registration_time;
+    std::chrono::system_clock::time_point registration_time =
+        std::chrono::system_clock::now();
 
    public:
     User(int id, const std::string& username, const std::string& password,
@@ -18,8 +19,7 @@ class User {
           username(username),
           password(password),
           phone_number(phone_number),
-          email(email),
-          registration_time(std::chrono::system_clock::now()) {}
+          email(email) {}
 
     std::string get_username() const { return username; }
     std::string get_password() const { return password; }
@@ -28,11 +28,7 @@ class User {
 
     std::string get_registration_time() const {
         auto time = std::chrono::system_clock::to_time_t(registration_time);
-        std::tm buf{};
-        localtime_r(&time, &buf);
-        char time_str[100];
-        strftime(time_str, sizeof(time_str), "%Y-%m-%d %H:%M:%S", &buf);
-        return time_str;
+        return std::ctime(&time);
     }
 
     int get_id() const { return id; }
