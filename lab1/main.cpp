@@ -68,7 +68,7 @@ void delete_user(UserCollection& user_collection) {
     }
 }
 
-void save_users_to_db(UserCollection& user_collection, sqlite3* db) {
+void save_users_to_db(const UserCollection& user_collection, sqlite3* db) {
     user_collection.save_users_to_db(db);
     std::cout << "Users saved to database." << std::endl;
 }
