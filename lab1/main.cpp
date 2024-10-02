@@ -67,7 +67,10 @@ int main(int argc, char* argv[]) {
                 int id;
                 std::cout << "Enter id to update: ";
                 std::cin >> id;
-                std::string username, password, phone_number, email;
+                std::string username;
+                std::string password;
+                std::string phone_number;
+                std::string email;
                 std::cout << "Enter new username: ";
                 std::cin >> username;
                 std::cout << "Enter new password: ";
