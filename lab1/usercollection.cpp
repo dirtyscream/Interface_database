@@ -113,7 +113,7 @@ class UserCollection {
         sqlite3_finalize(stmt);
     }
 
-    void save_users_to_db(sqlite3* db) {
+    void save_users_to_db(sqlite3* db) const {
         const char* sql = "DELETE FROM Users;";
         sqlite3_exec(db, sql, nullptr, nullptr, nullptr);
 

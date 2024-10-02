@@ -23,7 +23,7 @@ void create_table(sqlite3* db) {
     }
 }
 
-void print_all_users(UserCollection& user_collection) {
+void print_all_users(const UserCollection& user_collection) {
     user_collection.print_all_users();
 }
 
@@ -73,7 +73,7 @@ void save_users_to_db(UserCollection& user_collection, sqlite3* db) {
     std::cout << "Users saved to database." << std::endl;
 }
 
-void filter_users(UserCollection& user_collection) {
+void filter_users(const UserCollection& user_collection) {
     std::string username;
     std::string email;
     std::string phone_number;
