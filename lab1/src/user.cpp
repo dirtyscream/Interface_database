@@ -6,8 +6,7 @@ User::User(int id, const std::string& username, const std::string& password,
       username(username),
       password(password),
       phone_number(phone_number),
-      email(email),
-      registration_time(std::chrono::system_clock::now()) {}
+      email(email) {}
 
 std::string User::get_username() const { return username; }
 std::string User::get_password() const { return password; }

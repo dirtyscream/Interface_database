@@ -19,7 +19,7 @@ class UserCollection {
                      const std::string& password,
                      const std::string& phone_number, const std::string& email);
 
-    void set_db(sqlite3* db);
+    void set_database(sqlite3* db);
     bool delete_user(int id);
     bool update_user(int id, const std::string& username,
                      const std::string& password,
@@ -33,8 +33,8 @@ class UserCollection {
     void input_user_data(const std::string& username,
                          const std::string& password, const std::string& email,
                          const std::string& phone_number);
-    void load_users_from_db(sqlite3* db);
-    void save_users_to_db(sqlite3* db) const;
+    void load_users_from_db();
+    void save_users_to_db() const;
 };
 
 #endif  // USERCOLLECTION_H

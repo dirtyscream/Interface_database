@@ -11,7 +11,6 @@ class User {
     std::string password;
     std::string phone_number;
     std::string email;
-    std::chrono::system_clock::time_point registration_time;
 
    public:
     User(int id, const std::string& username, const std::string& password,

@@ -8,17 +8,17 @@ void UserCollection::create_user(int id, const std::string& username,
                                  const std::string& email) {
     users.emplace_back(
         std::make_unique<User>(id, username, password, phone_number, email));
-    save_users_to_db(db);
+    save_users_to_db();
 }
 
-void UserCollectiom::set_db(sqlite3* db) { this->db = db; }
+void UserCollection::set_database(sqlite3* db) { this->db = db; }
 
 bool UserCollection::delete_user(int id) {
     for (size_t i = 0; i < users.size(); ++i) {
         if (users[i]->get_id() == id) {
             users.erase(users.begin() + i);
             std::cout << "User deleted successfully.\n";
-            save_users_to_db(db);
+            save_users_to_db();
             return true;
         }
     }
@@ -34,7 +34,7 @@ bool UserCollection::update_user(int id, const std::string& username,
         if (user->get_id() == id) {
             user = std::make_unique<User>(id, username, password, phone_number,
                                           email);
-            save_users_to_db(db);
+            save_users_to_db();
             return true;
         }
     }
