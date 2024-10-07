@@ -141,8 +141,8 @@ int main(int argc, char* argv[]) {
     }
 
     create_table(db);
-    user_collection.db = db;
-    user_collection.load_users_from_db(db);
+    user_collection.set_db = db;
+    user_collection.load_users_from_db();
 
     int choice;
     do {

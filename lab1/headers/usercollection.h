@@ -12,14 +12,14 @@
 class UserCollection {
    private:
     std::vector<std::unique_ptr<User>> users;
+    sqlite3* db;
 
    public:
-    sqlite3* db;
     void create_user(int id, const std::string& username,
                      const std::string& password,
                      const std::string& phone_number, const std::string& email);
 
-    void set_database(sqlite3* db);
+    void set_db(sqlite3* db);
     bool delete_user(int id);
     bool update_user(int id, const std::string& username,
                      const std::string& password,

@@ -11,6 +11,8 @@ void UserCollection::create_user(int id, const std::string& username,
     save_users_to_db(db);
 }
 
+void UserCollectiom::set_db(sqlite3* db) { this->db = db; }
+
 bool UserCollection::delete_user(int id) {
     for (size_t i = 0; i < users.size(); ++i) {
         if (users[i]->get_id() == id) {
@@ -71,7 +73,7 @@ void UserCollection::input_user_data(const std::string& username,
     create_user(id, username, password, phone_number, email);
 }
 
-void UserCollection::load_users_from_db(sqlite3* db) {
+void UserCollection::load_users_from_db() {
     const char* sql =
         "SELECT id, username, password, phone_number, email FROM Users;";
     sqlite3_stmt* stmt;
@@ -96,7 +98,7 @@ void UserCollection::load_users_from_db(sqlite3* db) {
     sqlite3_finalize(stmt);
 }
 
-void UserCollection::save_users_to_db(sqlite3* db) const {
+void UserCollection::save_users_to_db() const {
     for (const auto& user : users) {
         const char* sql_insert_or_update =
             "INSERT INTO Users (id, username, password, phone_number, email) "
