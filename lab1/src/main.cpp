@@ -20,7 +20,11 @@ void create_table(sqlite3* db) {
 
 void update_user(UserCollection& user_collection) {
     int id;
-    std::string username, password, phone_number, email;
+    std::string username;
+    std::string name;
+    std::string password;
+    std::string phone_number;
+    std::string email;
 
     std::cout << "Enter user ID to update: ";
     std::cin >> id;
@@ -54,7 +58,9 @@ void delete_user(UserCollection& user_collection) {
 }
 
 void filter_users(const UserCollection& user_collection) {
-    std::string username, email, phone_number;
+    std::string username;
+    std::string email;
+    std::string phone_number;
 
     std::cout << "Enter username (or leave empty): ";
     std::cin >> username;
@@ -76,13 +82,29 @@ void filter_users(const UserCollection& user_collection) {
     }
 }
 
+void input_data(UserCollection& user_collection) {
+    std::string username;
+    std::string email;
+    std::string phone_number;
+    std::string password;
+    std::cout << "Enter username: ";
+    std::cin >> username;
+    std::cout << "Enter password: ";
+    std::cin >> password;
+    std::cout << "Enter phone number: ";
+    std::cin >> phone_number;
+    std::cout << "Enter email: ";
+    std::cin >> email;
+    user_collection.input_user_data(username, password, email, phone_number);
+}
+
 void handle_choice(int choice, UserCollection& user_collection, sqlite3* db) {
     switch (choice) {
         case 1:
             user_collection.print_all_users();
             break;
         case 2:
-            user_collection.input_user_data();
+            input_data(user_collection);
             break;
         case 3:
             update_user(user_collection);

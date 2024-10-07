@@ -65,19 +65,10 @@ void UserCollection::print_all_users() const {
     }
 }
 
-void UserCollection::input_user_data() {
-    std::string username, password, phone_number, email;
+void UserCollection::input_user_data(std::string username, std::string password,
+                                     std::string email,
+                                     std::string phone_number) {
     int id = users.size() + 1;
-
-    std::cout << "Enter username: ";
-    std::cin >> username;
-    std::cout << "Enter password: ";
-    std::cin >> password;
-    std::cout << "Enter phone number: ";
-    std::cin >> phone_number;
-    std::cout << "Enter email: ";
-    std::cin >> email;
-
     create_user(id, username, password, phone_number, email);
 }
 

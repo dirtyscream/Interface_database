@@ -30,7 +30,8 @@ class UserCollection {
         const std::string_view phone_number = "") const;
 
     void print_all_users() const;
-    void input_user_data();
+    void input_user_data(std::string username, std::string password,
+                         std::string email, std::string phone_number);
     void load_users_from_db(sqlite3* db);
     void save_users_to_db(sqlite3* db) const;
 };
