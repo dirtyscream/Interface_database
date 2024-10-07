@@ -11,8 +11,6 @@ void UserCollection::create_user(int id, const std::string& username,
     save_users_to_db(db);
 }
 
-void UserCollection::set_database(sqlite3* db) { this->db = db; }
-
 bool UserCollection::delete_user(int id) {
     for (size_t i = 0; i < users.size(); ++i) {
         if (users[i]->get_id() == id) {
