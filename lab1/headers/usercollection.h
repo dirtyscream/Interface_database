@@ -19,7 +19,7 @@ class UserCollection {
                      const std::string& password,
                      const std::string& phone_number, const std::string& email);
 
-    void set_database(sqlite3* db);
+    void set_database(sqlite3* database);
     bool delete_user(int id);
     bool update_user(int id, const std::string& username,
                      const std::string& password,
