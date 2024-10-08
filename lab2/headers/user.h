@@ -35,4 +35,4 @@ class User {
     User& operator=(const User&) = delete;
 };
 
-#endif  // USER_H
+#endif

@@ -38,4 +38,4 @@ class UserCollection {
     UserCollection& operator+=(const User& user);
 };
 
-#endif  // USERCOLLECTION_H
+#endif
