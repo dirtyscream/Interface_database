@@ -1,0 +1,144 @@
+#include "usercollection.h"
+
+#include <iostream>
+
+void UserCollection::create_user(int id, const std::string& username,
+                                 const std::string& password,
+                                 const std::string& phone_number,
+                                 const std::string& email) {
+    User new_user(id, username, password, phone_number, email);
+    *this += new_user;
+    if (!save_users_to_db()) {
+        std::cerr << "Failed to save user to database.\n";
+    }
+}
+
+void UserCollection::set_database(sqlite3* database) { this->db = database; }
+
+bool UserCollection::delete_user(int id) {
+    for (size_t i = 0; i < users.size(); ++i) {
+        if (users[i]->get_id() == id) {
+            users.erase(users.begin() + i);
+            std::cout << "User deleted successfully.\n";
+            save_users_to_db();
+            return true;
+        }
+    }
+    std::cout << "User not found\n";
+    return false;
+}
+
+bool UserCollection::update_user(int id, const std::string& username,
+                                 const std::string& password,
+                                 const std::string& phone_number,
+                                 const std::string& email) {
+    for (auto& user : users) {
+        if (user->get_id() == id) {
+            user = std::make_unique<User>(id, username, password, phone_number,
+                                          email);
+            save_users_to_db();
+            return true;
+        }
+    }
+    return false;
+}
+
+std::vector<User*> UserCollection::filter_users(
+    const std::string_view email, const std::string_view phone_number) const {
+    std::vector<User*> result;
+    for (const auto& user : users) {
+        if ((email.empty() || user->get_email() == email) &&
+            (phone_number.empty() ||
+             user->get_phone_number() == phone_number)) {
+            result.push_back(user.get());
+        }
+    }
+    return result;
+}
+
+void print_all_users(const UserCollection& user_collection) {
+    for (const auto& user : user_collection.users) {
+        std::cout << *user;
+    }
+}
+
+void UserCollection::input_user_data(const std::string& username,
+                                     const std::string& password,
+                                     const std::string& email,
+                                     const std::string& phone_number) {
+    int id = users.size() + 1;
+    create_user(id, username, password, phone_number, email);
+}
+
+void UserCollection::load_users_from_db() {
+    const char* sql =
+        "SELECT id, username, password, phone_number, email FROM Users;";
+    sqlite3_stmt* stmt;
+
+    if (sqlite3_prepare_v2(db, sql, -1, &stmt, nullptr) != SQLITE_OK) {
+        exit(-1);
+    }
+
+    while (sqlite3_step(stmt) == SQLITE_ROW) {
+        int id = sqlite3_column_int(stmt, 0);
+        std::string username =
+            reinterpret_cast<const char*>(sqlite3_column_text(stmt, 1));
+        std::string password =
+            reinterpret_cast<const char*>(sqlite3_column_text(stmt, 2));
+        std::string phone_number =
+            reinterpret_cast<const char*>(sqlite3_column_text(stmt, 3));
+        std::string email =
+            reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
+
+        create_user(id, username, password, phone_number, email);
+    }
+    sqlite3_finalize(stmt);
+}
+
+bool UserCollection::save_users_to_db() const {
+    for (const auto& user : users) {
+        const char* sql_insert_or_update =
+            "INSERT INTO Users (id, username, password, phone_number, email) "
+            "VALUES (?, ?, ?, ?, ?) "
+            "ON CONFLICT(id) DO UPDATE SET "
+            "username = excluded.username, "
+            "password = excluded.password, "
+            "phone_number = excluded.phone_number, "
+            "email = excluded.email;";
+
+        sqlite3_stmt* stmt;
+        if (sqlite3_prepare_v2(db, sql_insert_or_update, -1, &stmt, nullptr) !=
+            SQLITE_OK) {
+            std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db)
+                      << "\n";
+            return false;
+        }
+
+        sqlite3_bind_int(stmt, 1, user->get_id());
+        sqlite3_bind_text(stmt, 2, user->get_username().c_str(), -1,
+                          SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 3, user->get_password().c_str(), -1,
+                          SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 4, user->get_phone_number().c_str(), -1,
+                          SQLITE_STATIC);
+        sqlite3_bind_text(stmt, 5, user->get_email().c_str(), -1,
+                          SQLITE_STATIC);
+
+        if (sqlite3_step(stmt) != SQLITE_DONE) {
+            std::cerr << "Failed to execute statement: " << sqlite3_errmsg(db)
+                      << "\n";
+            sqlite3_finalize(stmt);
+            return false;
+        }
+
+        sqlite3_finalize(stmt);
+    }
+    return true;
+}
+
+UserCollection& UserCollection::operator+=(const User& user) {
+    users.emplace_back(std::make_unique<User>(
+        user.get_id(), user.get_username(), user.get_password(),
+        user.get_phone_number(), user.get_email()));
+    return *this;
+}
