@@ -8,9 +8,26 @@ void UserCollection::create_user(int id, const std::string& username,
                                  const std::string& email) {
     User new_user(id, username, password, phone_number, email);
     *this += new_user;
-    if (!save_users_to_db()) {
-        std::cerr << "Failed to save user to database.\n";
+    const char* sql_insert =
+        "INSERT INTO Users (id, username, password, phone_number, email) "
+        "VALUES (?, ?, ?, ?, ?);";
+    sqlite3_stmt* stmt;
+    if (sqlite3_prepare_v2(db, sql_insert, -1, &stmt, nullptr) != SQLITE_OK) {
+        std::cerr << "Failed to prepare insert statement: "
+                  << sqlite3_errmsg(db) << "\n";
+        return;
     }
+    sqlite3_bind_int(stmt, 1, id);
+    sqlite3_bind_text(stmt, 2, username.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 3, password.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 4, phone_number.c_str(), -1, SQLITE_STATIC);
+    sqlite3_bind_text(stmt, 5, email.c_str(), -1, SQLITE_STATIC);
+    if (sqlite3_step(stmt) != SQLITE_DONE) {
+        std::cerr << "Failed to execute insert statement: "
+                  << sqlite3_errmsg(db) << "\n";
+    }
+
+    sqlite3_finalize(stmt);
 }
 
 void UserCollection::set_database(sqlite3* database) { this->db = database; }
@@ -20,7 +37,22 @@ bool UserCollection::delete_user(int id) {
         if (users[i]->get_id() == id) {
             users.erase(users.begin() + i);
             std::cout << "User deleted successfully.\n";
-            save_users_to_db();
+            const char* sql_delete = "DELETE FROM Users WHERE id = ?;";
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, sql_delete, -1, &stmt, nullptr) !=
+                SQLITE_OK) {
+                std::cerr << "Failed to prepare delete statement: "
+                          << sqlite3_errmsg(db) << "\n";
+                return false;
+            }
+            sqlite3_bind_int(stmt, 1, id);
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                std::cerr << "Failed to execute delete statement: "
+                          << sqlite3_errmsg(db) << "\n";
+                sqlite3_finalize(stmt);
+                return false;
+            }
+            sqlite3_finalize(stmt);
             return true;
         }
     }
@@ -36,7 +68,28 @@ bool UserCollection::update_user(int id, const std::string& username,
         if (user->get_id() == id) {
             user = std::make_unique<User>(id, username, password, phone_number,
                                           email);
-            save_users_to_db();
+            const char* sql_update =
+                "UPDATE Users SET username = ?, password = ?, phone_number = "
+                "?, email = ? WHERE id = ?;";
+            sqlite3_stmt* stmt;
+            if (sqlite3_prepare_v2(db, sql_update, -1, &stmt, nullptr) !=
+                SQLITE_OK) {
+                std::cerr << "Failed to prepare update statement: "
+                          << sqlite3_errmsg(db) << "\n";
+                return false;
+            }
+            sqlite3_bind_text(stmt, 1, username.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 2, password.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 3, phone_number.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_text(stmt, 4, email.c_str(), -1, SQLITE_STATIC);
+            sqlite3_bind_int(stmt, 5, id);
+            if (sqlite3_step(stmt) != SQLITE_DONE) {
+                std::cerr << "Failed to execute update statement: "
+                          << sqlite3_errmsg(db) << "\n";
+                sqlite3_finalize(stmt);
+                return false;
+            }
+            sqlite3_finalize(stmt);
             return true;
         }
     }
@@ -90,7 +143,8 @@ void UserCollection::load_users_from_db() {
         std::string email =
             reinterpret_cast<const char*>(sqlite3_column_text(stmt, 4));
 
-        create_user(id, username, password, phone_number, email);
+        User new_user(id, username, password, phone_number, email);
+        *this += new_user;
     }
     sqlite3_finalize(stmt);
 }
@@ -109,8 +163,7 @@ bool UserCollection::save_users_to_db() const {
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql_insert_or_update, -1, &stmt, nullptr) !=
             SQLITE_OK) {
-            std::cerr << "Failed to prepare statement: " << sqlite3_errmsg(db)
-                      << "\n";
+            exit(-2);
             return false;
         }
 
@@ -124,13 +177,7 @@ bool UserCollection::save_users_to_db() const {
         sqlite3_bind_text(stmt, 5, user->get_email().c_str(), -1,
                           SQLITE_STATIC);
 
-        if (sqlite3_step(stmt) != SQLITE_DONE) {
-            std::cerr << "Failed to execute statement: " << sqlite3_errmsg(db)
-                      << "\n";
-            sqlite3_finalize(stmt);
-            return false;
-        }
-
+        sqlite3_step(stmt);
         sqlite3_finalize(stmt);
     }
     return true;
