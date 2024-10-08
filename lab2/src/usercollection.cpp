@@ -163,8 +163,8 @@ bool UserCollection::save_users_to_db() const {
         sqlite3_stmt* stmt;
         if (sqlite3_prepare_v2(db, sql_insert_or_update, -1, &stmt, nullptr) !=
             SQLITE_OK) {
-            exit(-2);
             return false;
+            exit(-2);
         }
 
         sqlite3_bind_int(stmt, 1, user->get_id());
