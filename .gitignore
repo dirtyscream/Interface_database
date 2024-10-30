@@ -1,14 +1,9 @@
-# Игнорировать директорию .vscode .sonarlint
+
 .vscode/
 .sonarlint/
-
-# Игнорировать временные файлы
 *.o
 *.exe
 *.out
-
-# Игнорировать файлы сборки
 build/
 bin/
-
 test.cpp
