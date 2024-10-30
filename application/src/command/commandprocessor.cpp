@@ -4,17 +4,17 @@
 CommandProcessor::CommandProcessor(TableService& service) 
     : table_service(service) {
     command_map = {
-        {"use", std::bind(&CommandProcessor::handle_use, this, std::placeholders::_1)},
-        {"create", std::bind(&CommandProcessor::handle_create, this, std::placeholders::_1)},
-        {"drop", std::bind(&CommandProcessor::handle_drop, this, std::placeholders::_1)},
-        {"list", std::bind(&CommandProcessor::handle_list, this, std::placeholders::_1)},
-        {"help", std::bind(&CommandProcessor::handle_help, this, std::placeholders::_1)},
+        {"use", std::bind_front(&CommandProcessor::handle_use, this, std::placeholders::_1)},
+        {"create", std::bind_front(&CommandProcessor::handle_create, this, std::placeholders::_1)},
+        {"drop", std::bind_front(&CommandProcessor::handle_drop, this, std::placeholders::_1)},
+        {"list", std::bind_front(&CommandProcessor::handle_list, this, std::placeholders::_1)},
+        {"help", std::bind_front(&CommandProcessor::handle_help, this, std::placeholders::_1)},
         {"exit", [this](const std::istringstream&) { exit_flag = true; }},
-        {"add", std::bind(&CommandProcessor::process_add, this, std::placeholders::_1)},
-        {"remove", std::bind(&CommandProcessor::process_remove, this, std::placeholders::_1)},
-        {"update", std::bind(&CommandProcessor::process_update, this, std::placeholders::_1)},
-        {"show", std::bind(&CommandProcessor::process_show_all, this)},
-        {"find", std::bind(&CommandProcessor::process_find, this, std::placeholders::_1)},
+        {"add", std::bind_front(&CommandProcessor::process_add, this, std::placeholders::_1)},
+        {"remove", std::bind_front(&CommandProcessor::process_remove, this, std::placeholders::_1)},
+        {"update", std::bind_front(&CommandProcessor::process_update, this, std::placeholders::_1)},
+        {"show", std::bind_front(&CommandProcessor::process_show_all, this)},
+        {"find", std::bind_front(&CommandProcessor::process_find, this, std::placeholders::_1)},
         {"back", [this](std::istringstream&) { current_table.clear(); std::cout << "Exited from table context." << std::endl; }}
     };
 }
@@ -32,7 +32,7 @@ void CommandProcessor::process_command(const std::string& command) {
     }
 }
 
-void CommandProcessor::handle_use(std::istringstream& iss) {
+void CommandProcessor::handle_use(const std::istringstream& iss) {
     iss >> current_table;
     if (!current_table.empty()) {
         std::cout << "Using table: " << current_table << std::endl;
@@ -41,7 +41,7 @@ void CommandProcessor::handle_use(std::istringstream& iss) {
     }
 }
 
-void CommandProcessor::handle_create(std::istringstream& iss) {
+void CommandProcessor::handle_create(const std::istringstream& iss) {
     std::string subcmd;
     iss >> subcmd;
 
@@ -52,7 +52,7 @@ void CommandProcessor::handle_create(std::istringstream& iss) {
     }
 }
 
-void CommandProcessor::handle_drop(std::istringstream& iss) {
+void CommandProcessor::handle_drop(const std::istringstream& iss) {
     std::string subcmd;
     iss >> subcmd;
 
@@ -63,11 +63,11 @@ void CommandProcessor::handle_drop(std::istringstream& iss) {
     }
 }
 
-void CommandProcessor::handle_list(std::istringstream&) {
+void CommandProcessor::handle_list(const std::istringstream&) {
     table_service.list_tables();
 }
 
-void CommandProcessor::handle_help(std::istringstream&) {
+void CommandProcessor::handle_help(const std::istringstream&) {
     std::cout << "Available commands:" << std::endl;
     std::cout << "Database commands:" << std::endl;
     std::cout << "  use <table_name>     - Switch to specific table context." << std::endl;
@@ -88,7 +88,7 @@ void CommandProcessor::handle_help(std::istringstream&) {
     std::cout << "  help               - Show this help message." << std::endl;
 }
 
-void CommandProcessor::process_create_table(std::istringstream& iss) {
+void CommandProcessor::process_create_table(const std::istringstream& iss) {
     std::string table_name;
     iss >> table_name;
 
@@ -106,13 +106,13 @@ void CommandProcessor::process_create_table(std::istringstream& iss) {
     }
 }
 
-void CommandProcessor::process_drop_table(std::istringstream& iss) {
+void CommandProcessor::process_drop_table(const std::istringstream& iss) {
     std::string table_name;
     iss >> table_name;
     table_service.drop_table(table_name);
 }
 
-void CommandProcessor::process_add(std::istringstream& iss) {
+void CommandProcessor::process_add(const std::istringstream& iss) {
     std::vector<std::pair<std::string, std::string>> entry;
     std::string column_value;
     while (iss >> column_value) {
@@ -131,7 +131,7 @@ void CommandProcessor::process_add(std::istringstream& iss) {
     }
 }
 
-void CommandProcessor::process_remove(std::istringstream& iss) {
+void CommandProcessor::process_remove(const std::istringstream& iss) {
     int id;
     if (iss >> id) {
         table_service.remove_entry(current_table, id);
@@ -140,7 +140,7 @@ void CommandProcessor::process_remove(std::istringstream& iss) {
     }
 }
 
-void CommandProcessor::process_update(std::istringstream& iss) {
+void CommandProcessor::process_update(const std::istringstream& iss) {
     int id;
     std::string column_value;
     if (iss >> id >> column_value) {
@@ -173,7 +173,7 @@ void CommandProcessor::process_show_all() {
 }
 
 
-void CommandProcessor::process_find(std::istringstream& iss) {
+void CommandProcessor::process_find(const std::istringstream& iss) {
     std::string condition;
     if (iss >> condition) {
         table_service.find_entries(current_table, condition);
