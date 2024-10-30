@@ -9,7 +9,7 @@
 
 class CommandProcessor {
 public:
-    CommandProcessor(TableService& service); 
+    explicit CommandProcessor(TableService& service); 
     void process_command(const std::string& command); 
 
 private:

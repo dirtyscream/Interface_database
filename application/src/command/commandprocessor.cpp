@@ -15,7 +15,7 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"update", std::bind_front(&CommandProcessor::process_update, this, std::placeholders::_1)},
         {"show", std::bind_front(&CommandProcessor::process_show_all, this)},
         {"find", std::bind_front(&CommandProcessor::process_find, this, std::placeholders::_1)},
-        {"back", [this](std::istringstream&) { current_table.clear(); std::cout << "Exited from table context." << std::endl; }}
+        {"back", [this](const std::istringstream&) { current_table.clear(); std::cout << "Exited from table context." << std::endl; }}
     };
 }
 
@@ -93,10 +93,11 @@ void CommandProcessor::process_create_table(const std::istringstream& iss) {
     iss >> table_name;
 
     std::vector<std::pair<std::string, std::string>> columns;
-    std::string column_name, column_type;
+    std::string column_name;
+    std::string column_type;
 
     while (iss >> column_name >> column_type) {
-        columns.push_back({column_name, column_type});
+        columns.emplace_back({column_name, column_type});
     }
 
     if (!columns.empty()) {
