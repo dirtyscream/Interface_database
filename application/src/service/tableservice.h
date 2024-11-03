@@ -7,7 +7,7 @@
 
 class TableService {
 public:
-    TableService(TableRepository& repository);
+    explicit TableService(TableRepository& repository);
     void create_table(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& columns);
     void drop_table(const std::string& table_name);
     void add_entry(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& entry);

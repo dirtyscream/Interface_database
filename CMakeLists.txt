@@ -1,20 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
-
-# Укажите имя вашего проекта
 project(MyApplication VERSION 1.0 LANGUAGES CXX)
 
-# Укажите стандарт C++
-set(CMAKE_CXX_STANDARD 17)
+# Установка стандарта C++20
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
 
-# Укажите директории для поиска заголовочных файлов
+# Указание флагов компиляции для использования C++20 и libc++
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -stdlib=libc++")
+
+# Указание каталогов для включаемых файлов и библиотек
 include_directories(/usr/include /opt/homebrew/include)
-
-# Укажите директории для поиска библиотек
 link_directories(/opt/homebrew/lib /opt/homebrew/opt/libpq/lib)
 
-# Укажите исходные файлы
+# Поиск всех исходных файлов в указанных директориях
 file(GLOB SOURCES
     "application/src/*.cpp"
     "application/src/command/*.cpp"
@@ -22,13 +20,12 @@ file(GLOB SOURCES
     "application/src/repository/*.cpp"
     "application/src/service/*.cpp"
     "application/src/template/*.cpp"
-    "application/src/utils/*.cpp")
+    "application/src/utils/*.cpp"
+)
 
-# Создайте исполняемый файл
+# Создание исполняемого файла и связывание с библиотеками
 add_executable(main ${SOURCES})
-
-# Свяжите библиотеки
 target_link_libraries(main pqxx pq sqlite3)
 
-# Установите правила для очистки
+# Удаление скомпилированного исполняемого файла при очистке сборки
 set(CMAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/main")

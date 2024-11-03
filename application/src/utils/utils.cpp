@@ -44,5 +44,6 @@ std::string get_connection_string() {
         }
      } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
+        throw std::runtime_error("Something went wrong...\n");
     }
 }
