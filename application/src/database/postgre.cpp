@@ -1,17 +1,25 @@
+#include "databaseexception.h"
 #include "postgre.h"
 #include "pqxx/pqxx"
+#include <iostream>
 
 void PostgresDatabase::connect(const std::string& conn_str) {
     conn = new pqxx::connection(conn_str);
     if (conn->is_open()) {
         std::cout << "Connected to the database." << std::endl;
     } else {
-        throw std::runtime_error("Failed to connect to the database.");
+        DatabaseException ex("Failed to connect to the database.");
+        ex.logError();
+        throw ex;
     }
 }
 
 pqxx::result PostgresDatabase::execute_query(const std::string& query) {
-    if (!conn) throw std::runtime_error("No active database connection.");
+    if (!conn) {
+        DatabaseException ex("No active database connection.");
+        ex.logError();
+        throw ex;
+    }
 
     pqxx::work txn(*conn);
     pqxx::result result = txn.exec(query);
