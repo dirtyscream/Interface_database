@@ -1,5 +1,25 @@
 #include "utils.h"
-#include <cstdlib>
+#include <iostream>
+#include <fstream>
+#include <string>
+
+std::string read_connection_info_from_file(std::string& password, std::string& host, 
+                                            std::string& port, std::string& user, 
+                                            std::string& db_name) {
+    std::ifstream secret_file("../application/src/utils/secret.txt");
+    if (!secret_file) {
+        std::cerr << "Error: Unable to open secret.txt file." << std::endl;
+        exit(-1);
+    }
+
+    std::getline(secret_file, password);
+    std::getline(secret_file, host);
+    std::getline(secret_file, port);
+    std::getline(secret_file, user);
+    std::getline(secret_file, db_name);
+
+    return "Connection info read from secret.txt";
+}
 
 std::string get_connection_string() {
     try {
@@ -7,42 +27,38 @@ std::string get_connection_string() {
         int mode;
         std::cin >> mode;
         std::cin.ignore(); 
+
         if (mode == 1) {
-            std::string env_password = std::getenv("DB_PASSWORD");
-            std::string host = std::getenv("HOST");
-            std::string port = std::getenv("PORT");
-            std::string user = std::getenv("USER");
-            std::string db_name = std::getenv("DB_NAME");
-            return "host=" + host + " port=" + port + " dbname=" + db_name + " user=" + user + " password=" + env_password;
-        }
-        else if (mode == 2) {
-            std::string host;
-            std::string port;
-            std::string dbname;
-            std::string user;
-            std::string password;
+            std::string password, host, port, user, db_name;
+            read_connection_info_from_file(password, host, port, user, db_name);
+            return "host=" + host + 
+                   " port=" + port + 
+                   " dbname=" + db_name + 
+                   " user=" + user + 
+                   " password=" + password;
+        } else if (mode == 2) {
+            std::string custom_host, custom_port, custom_dbname, custom_user, custom_password;
             std::cout << "Enter host (e.g. 'localhost'): ";
-            std::getline(std::cin, host);
+            std::getline(std::cin, custom_host);
 
             std::cout << "Enter port (e.g. '5432'): ";
-            std::getline(std::cin, port);
+            std::getline(std::cin, custom_port);
 
             std::cout << "Enter database name (e.g. 'test'): ";
-            std::getline(std::cin, dbname);
+            std::getline(std::cin, custom_dbname);
 
             std::cout << "Enter user (e.g. 'postgres'): ";
-            std::getline(std::cin, user);
+            std::getline(std::cin, custom_user);
 
             std::cout << "Enter password (e.g. 'secret'): ";
-            std::getline(std::cin, password);
+            std::getline(std::cin, custom_password);
 
-            return "host=" + host + " port=" + port + " dbname=" + dbname + " user=" + user + " password=" + password;
-        }
-        else {
+            return "host=" + custom_host + " port=" + custom_port + " dbname=" + custom_dbname + " user=" + custom_user + " password=" + custom_password;
+        } else {
             std::cerr << "Invalid mode..." << std::endl;
             exit(-1);
         }
-     } catch (const std::exception& e) {
+    } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
         throw std::runtime_error("Something went wrong...\n");
     }
