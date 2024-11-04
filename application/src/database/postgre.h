@@ -5,17 +5,14 @@
 #include <pqxx/pqxx>
 #include <stdexcept>
 #include <iostream>
+#include <memory>
 
 class PostgresDatabase : public Database {
 private:
-    pqxx::connection* conn;
-
+    std::unique_ptr<pqxx::connection> conn;
 public:
     PostgresDatabase() = default;
-    ~PostgresDatabase() { if (conn) delete conn; }
-
     void connect(const std::string& conn_str) override;
-
     pqxx::result execute_query(const std::string& query) override;
 };
 
