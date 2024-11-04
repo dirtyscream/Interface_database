@@ -9,7 +9,7 @@ void PostgresDatabase::connect(const std::string& conn_str) {
         std::cout << "Connected to the database." << std::endl;
     } else {
         DatabaseException ex("Failed to connect to the database.");
-        ex.logError();
+        ex.log_error();
         throw ex;
     }
 }
@@ -17,10 +17,9 @@ void PostgresDatabase::connect(const std::string& conn_str) {
 pqxx::result PostgresDatabase::execute_query(const std::string& query) {
     if (!conn) {
         DatabaseException ex("No active database connection.");
-        ex.logError();
+        ex.log_error();
         throw ex;
     }
-
     pqxx::work txn(*conn);
     pqxx::result result = txn.exec(query);
     txn.commit();

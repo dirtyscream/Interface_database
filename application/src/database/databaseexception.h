@@ -27,7 +27,7 @@ public:
         return std::runtime_error::what();
     }
 
-    void logError() const {
+    void log_error() const {
         log(what());
     }
 };

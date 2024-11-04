@@ -19,13 +19,14 @@ void TableRepository::drop_table(const std::string& table_name) {
 void TableRepository::add_entry(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& entry) {
     std::string query = "INSERT INTO " + table_name + " (";
     std::string values = "VALUES (";
-    for (const auto& field : entry) {
-        query += field.first + ", ";
-        values += "'" + field.second + "', ";
+    for (const auto& [key, value] : entry) {
+        query += key + ", ";
+        values += "'" + value + "', ";
     }
     query = query.substr(0, query.size() - 2) + ") " + values.substr(0, values.size() - 2) + ");";
     db.execute_query(query);
 }
+
 
 void TableRepository::remove_entry(const std::string& table_name, int id) {
     std::string query = "DELETE FROM " + table_name + " WHERE id = " + std::to_string(id) + ";";
