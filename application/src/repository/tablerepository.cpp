@@ -84,8 +84,7 @@ std::vector<std::string> TableRepository::find_entries(const std::string& table_
 
 class TableRepositoryException : public std::runtime_error {
 public:
-    explicit TableRepositoryException(const std::string& message)
-        : std::runtime_error(message) {}
+    using std::runtime_error::runtime_error;
 };
 
 std::vector<std::string> TableRepository::list_tables() {
