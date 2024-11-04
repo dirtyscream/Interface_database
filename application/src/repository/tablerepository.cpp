@@ -90,6 +90,8 @@ std::vector<std::string> TableRepository::list_tables() {
         for (const auto& row : result) {
             tables.push_back(row["table_name"].as<std::string>());
         }
+    } catch (const pqxx::sql_error& e) {
+        std::cerr << "SQL error: " << e.what() << "\nQuery: " << e.query() << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error retrieving tables: " << e.what() << std::endl;
     }
