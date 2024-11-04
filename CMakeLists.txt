@@ -5,9 +5,6 @@ project(MyApplication VERSION 1.0 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Указание флагов компиляции для использования C++20 и libc++
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++20 -stdlib=libc++")
-
 # Указание каталогов для включаемых файлов и библиотек
 include_directories(/usr/include /opt/homebrew/include)
 link_directories(/opt/homebrew/lib /opt/homebrew/opt/libpq/lib)
@@ -27,5 +24,5 @@ file(GLOB SOURCES
 add_executable(main ${SOURCES})
 target_link_libraries(main pqxx pq sqlite3)
 
-# Удаление скомпилированного исполняемого файла при очистке сборки
-set(CMAKE_CLEAN_FILES "${CMAKE_CURRENT_BINARY_DIR}/main")
+# Кастомная цель для очистки сборки
+add_custom_target(clean-main COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/main)

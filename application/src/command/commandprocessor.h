@@ -32,4 +32,4 @@ private:
     void process_show_all() const;
 };
 
-#endif // COMMANDPROCESSOR_H
+#endif 

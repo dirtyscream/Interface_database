@@ -8,7 +8,7 @@
 
 class TableRepository {
 public:
-    TableRepository(PostgresDatabase& database);
+    explicit TableRepository(PostgresDatabase& database);
     void create_table(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& columns);
     void drop_table(const std::string& table_name);
     void add_entry(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& entry);

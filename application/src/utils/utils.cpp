@@ -37,7 +37,11 @@ std::string get_connection_string() {
                    " user=" + user + 
                    " password=" + password;
         } else if (mode == 2) {
-            std::string custom_host, custom_port, custom_dbname, custom_user, custom_password;
+            std::string custom_host;
+            std::string custom_port;
+            std::string custom_dbname;
+            std::string custom_user;
+            std::string custom_password;
             std::cout << "Enter host (e.g. 'localhost'): ";
             std::getline(std::cin, custom_host);
 

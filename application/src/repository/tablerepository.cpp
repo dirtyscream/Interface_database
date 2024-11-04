@@ -1,40 +1,40 @@
+#include <format>
 #include "tablerepository.h"
 
 TableRepository::TableRepository(PostgresDatabase& database) : db(database) {}
 
 void TableRepository::create_table(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& columns) {
-    std::string query = "CREATE TABLE " + table_name + " (";
+    std::string query = std::format("CREATE TABLE {} (", table_name);
     for (const auto& column : columns) {
-        query += column.first + " " + column.second + ", ";
+        query += std::format("{} {}, ", column.first, column.second);
     }
     query = query.substr(0, query.size() - 2) + ");";
     db.execute_query(query);
 }
 
 void TableRepository::drop_table(const std::string& table_name) {
-    std::string query = "DROP TABLE IF EXISTS " + table_name + ";";
+    std::string query = std::format("DROP TABLE IF EXISTS {}; ", table_name);
     db.execute_query(query);
 }
 
 void TableRepository::add_entry(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& entry) {
-    std::string query = "INSERT INTO " + table_name + " (";
+    std::string query = std::format("INSERT INTO {} (", table_name);
     std::string values = "VALUES (";
     for (const auto& [key, value] : entry) {
-        query += key + ", ";
-        values += "'" + value + "', ";
+        query += std::format("{}, ", key);
+        values += std::format("'{}', ", value);
     }
     query = query.substr(0, query.size() - 2) + ") " + values.substr(0, values.size() - 2) + ");";
     db.execute_query(query);
 }
 
-
 void TableRepository::remove_entry(const std::string& table_name, int id) {
-    std::string query = "DELETE FROM " + table_name + " WHERE id = " + std::to_string(id) + ";";
+    std::string query = std::format("DELETE FROM {} WHERE id = {}; ", table_name, id);
     db.execute_query(query);
 }
 
 void TableRepository::update_entry(const std::string& table_name, int id, const std::pair<std::string, std::string>& column_value) {
-    std::string query = "UPDATE " + table_name + " SET " + column_value.first + " = '" + column_value.second + "' WHERE id = " + std::to_string(id) + ";";
+    std::string query = std::format("UPDATE {} SET {} = '{}' WHERE id = {}; ", table_name, column_value.first, column_value.second, id);
     db.execute_query(query);
 }
 
@@ -50,7 +50,7 @@ std::vector<std::string> TableRepository::show_all_entries(const std::string& ta
         header += col + "\t";
     }
     entries.push_back(header);
-    std::string query = "SELECT * FROM " + table_name + ";";
+    std::string query = std::format("SELECT * FROM {}; ", table_name);
     auto result = db.execute_query(query);
     if (result.empty()) {
         std::cerr << "Error: Query returned no results or failed." << std::endl;
@@ -66,11 +66,9 @@ std::vector<std::string> TableRepository::show_all_entries(const std::string& ta
     return entries;
 }
 
-
 std::vector<std::string> TableRepository::find_entries(const std::string& table_name, const std::string& condition) {
-    std::string query = "SELECT * FROM " + table_name + " WHERE " + condition + ";";
+    std::string query = std::format("SELECT * FROM {} WHERE {}; ", table_name, condition);
     auto result = db.execute_query(query);
-
     std::vector<std::string> entries;
     for (const auto& row : result) {
         std::string entry;
@@ -98,7 +96,7 @@ std::vector<std::string> TableRepository::list_tables() {
 
 std::vector<std::string> TableRepository::get_column_names(const std::string& table_name) {
     std::vector<std::string> column_names;
-    std::string query = "SELECT column_name FROM information_schema.columns WHERE table_name = '" + table_name + "';";
+    std::string query = std::format("SELECT column_name FROM information_schema.columns WHERE table_name = '{}';", table_name);
     
     auto result = db.execute_query(query);
     for (const auto& row : result) {
@@ -106,4 +104,3 @@ std::vector<std::string> TableRepository::get_column_names(const std::string& ta
     }
     return column_names;
 }
-
