@@ -11,7 +11,7 @@ private:
     pqxx::connection* conn;
 
 public:
-    PostgresDatabase() : conn(nullptr) {}
+    PostgresDatabase() = default;
     ~PostgresDatabase() { if (conn) delete conn; }
 
     void connect(const std::string& conn_str) override;

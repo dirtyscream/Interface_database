@@ -29,7 +29,11 @@ std::string get_connection_string() {
         std::cin.ignore(); 
 
         if (mode == 1) {
-            std::string password, host, port, user, db_name;
+            std::string password;
+            std::string host;
+            std::string port;
+            std::string user;
+            std::string db_name;
             read_connection_info_from_file(password, host, port, user, db_name);
             return "host=" + host + 
                    " port=" + port + 
@@ -64,6 +68,6 @@ std::string get_connection_string() {
         }
     } catch (const std::exception& e) {
         std::cerr << "Error: " << e.what() << std::endl;
-        throw std::runtime_error("Something went wrong...\n");
+        exit(-1);
     }
 }
