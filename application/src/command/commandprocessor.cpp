@@ -8,14 +8,57 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"use", [this](std::istringstream& iss) { handle_use(iss); }},
         {"create", [this](std::istringstream& iss) { handle_create(iss); }},
         {"drop", [this](std::istringstream& iss) { handle_drop(iss); }},
-        {"list", [this](const std::istringstream&) { handle_list(); }},
-        {"help", [this](const std::istringstream&) { handle_help(); }},
+        {"list", [this](std::istringstream& iss) { handle_list(iss); }},
+        {"help", [this](std::istringstream& iss) { handle_help(iss); }},
         {"add", [this](std::istringstream& iss) { process_add(iss); }},
         {"remove", [this](std::istringstream& iss) { process_remove(iss); }},
         {"update", [this](std::istringstream& iss) { process_update(iss); }},
-        {"show", [this](const std::istringstream&) { process_show_all(); }},
+        {"show", [this](std::istringstream& iss) { process_show_all(); }},
         {"find", [this](std::istringstream& iss) { process_find(iss); }}
     };
+}
+
+void CommandProcessor::process_drop_table(std::istringstream& iss) {
+    std::string table_name;
+    iss >> table_name;
+    table_service.drop_table(table_name);
+}
+
+void CommandProcessor::handle_list(std::istringstream&) {
+    table_service.list_tables();
+}
+
+void CommandProcessor::handle_help(std::istringstream&) {
+    std::cout << "Available commands:\n";
+    std::cout << "Database commands:\n";
+    std::cout << "  use <table_name>     - Switch to specific table context.\n";
+    std::cout << "  create table <table_name> - Create a new table.\n";
+    std::cout << "  drop table <table_name> - Drop a table.\n";
+    std::cout << "  list tables          - List all tables.\n";
+    std::cout << "Table commands (after using a table):\n";
+    std::cout << "  add <column1=value1> <column2=value2> - Add a record.\n";
+    std::cout << "  remove <id>       - Remove a record by ID.\n";
+    std::cout << "  update <id> <column=value> - Update a record by ID.\n";
+    std::cout << "  show all          - Show all records.\n";
+    std::cout << "  find <column=value> - Find records matching a condition.\n";
+    std::cout << "Navigation:\n";
+    std::cout << "  exit               - Exit current context or application.\n";
+    std::cout << "  back               - Go back to database context.\n";
+    std::cout << "  help               - Show this help message.\n";
+}
+
+void CommandProcessor::process_show_all() const {
+    std::vector<std::string> entries = table_service.show_all_entries(current_table);
+
+    if (entries.empty()) {
+        std::cout << "No entries found or table does not exist.\n";
+        return;
+    }
+
+    std::cout << "Entries in table " << current_table << ":\n";
+    for (const auto& entry : entries) {
+        std::cout << entry << '\n';
+    }
 }
 
 void CommandProcessor::process_command(const std::string& command) {
@@ -28,44 +71,6 @@ void CommandProcessor::process_command(const std::string& command) {
         it->second(iss);
     } else {
         std::cerr << "Error: Unknown command." << std::endl;
-    }
-}
-void CommandProcessor::handle_list() const {
-    table_service.list_tables();
-}
-
-void CommandProcessor::handle_help() const {
-    std::cout << "Available commands:" << std::endl;
-    std::cout << "Database commands:" << std::endl;
-    std::cout << "  use <table_name>     - Switch to specific table context." << std::endl;
-    std::cout << "  create table <table_name> - Create a new table." << std::endl;
-    std::cout << "  drop table <table_name> - Drop a table." << std::endl;
-    std::cout << "  list tables          - List all tables." << std::endl;
-
-    std::cout << "Table commands (after using a table):" << std::endl;
-    std::cout << "  add <column1=value1> <column2=value2> - Add a record." << std::endl;
-    std::cout << "  remove <id>       - Remove a record by ID." << std::endl;
-    std::cout << "  update <id> <column=value> - Update a record by ID." << std::endl;
-    std::cout << "  show all          - Show all records." << std::endl;
-    std::cout << "  find <column=value> - Find records matching a condition." << std::endl;
-
-    std::cout << "Navigation:" << std::endl;
-    std::cout << "  exit               - Exit current context or application." << std::endl;
-    std::cout << "  back               - Go back to database context." << std::endl;
-    std::cout << "  help               - Show this help message." << std::endl;
-}
-
-void CommandProcessor::process_show_all() const {
-    std::vector<std::string> entries = table_service.show_all_entries(current_table);
-    
-    if (entries.empty()) {
-        std::cout << "No entries found or table does not exist." << std::endl;
-        return;
-    }
-
-    std::cout << "Entries in table " << current_table << ":\n";
-    for (const auto& entry : entries) {
-        std::cout << entry << std::endl;
     }
 }
 
@@ -164,21 +169,6 @@ void CommandProcessor::process_update(std::istringstream& iss) {
         std::cerr << "Error: Invalid ID for update." << std::endl;
     }
 }
-
-void CommandProcessor::process_show_all() {
-    std::vector<std::string> entries = table_service.show_all_entries(current_table);
-    
-    if (entries.empty()) {
-        std::cout << "No entries found or table does not exist." << std::endl;
-        return;
-    }
-
-    std::cout << "Entries in table " << current_table << ":\n";
-    for (const auto& entry : entries) {
-        std::cout << entry << std::endl;
-    }
-}
-
 
 void CommandProcessor::process_find(std::istringstream& iss) {
     std::string condition;
