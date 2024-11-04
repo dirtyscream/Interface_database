@@ -27,8 +27,8 @@ private:
     void process_remove(std::istringstream& iss);
     void process_update(std::istringstream& iss);
     void process_find(std::istringstream& iss);
-    void handle_list(std::istringstream& /*iss*/); 
-    void handle_help(std::istringstream& /*iss*/); 
+    void handle_list(const std::istringstream& /*iss*/) const;  
+    void handle_help(const std::istringstream& /*iss*/) const; 
     void process_show_all() const;
 };
 

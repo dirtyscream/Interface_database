@@ -8,12 +8,12 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"use", [this](std::istringstream& iss) { handle_use(iss); }},
         {"create", [this](std::istringstream& iss) { handle_create(iss); }},
         {"drop", [this](std::istringstream& iss) { handle_drop(iss); }},
-        {"list", [this](std::istringstream& iss) { handle_list(iss); }},
-        {"help", [this](std::istringstream& iss) { handle_help(iss); }},
+        {"list", [this](const std::istringstream& iss) { handle_list(iss); }},
+        {"help", [this](const std::istringstream& iss) { handle_help(iss); }},
         {"add", [this](std::istringstream& iss) { process_add(iss); }},
         {"remove", [this](std::istringstream& iss) { process_remove(iss); }},
         {"update", [this](std::istringstream& iss) { process_update(iss); }},
-        {"show", [this](std::istringstream& iss) { process_show_all(); }},
+        {"show", [this](const std::istringstream&) { process_show_all(); }},
         {"find", [this](std::istringstream& iss) { process_find(iss); }}
     };
 }
@@ -24,11 +24,11 @@ void CommandProcessor::process_drop_table(std::istringstream& iss) {
     table_service.drop_table(table_name);
 }
 
-void CommandProcessor::handle_list(std::istringstream&) {
+void CommandProcessor::handle_list(const std::istringstream&) const {
     table_service.list_tables();
 }
 
-void CommandProcessor::handle_help(std::istringstream&) {
+void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "Available commands:\n";
     std::cout << "Database commands:\n";
     std::cout << "  use <table_name>     - Switch to specific table context.\n";
