@@ -82,6 +82,12 @@ std::vector<std::string> TableRepository::find_entries(const std::string& table_
     return entries;
 }
 
+class TableRepositoryException : public std::runtime_error {
+public:
+    explicit TableRepositoryException(const std::string& message)
+        : std::runtime_error(message) {}
+};
+
 std::vector<std::string> TableRepository::list_tables() {
     std::vector<std::string> tables; 
     try {
@@ -91,10 +97,8 @@ std::vector<std::string> TableRepository::list_tables() {
             tables.push_back(row["table_name"].as<std::string>());
         }
     } catch (const pqxx::sql_error& e) {
-        std::cerr << "SQL error: " << e.what() << "\nQuery: " << e.query() << std::endl;
-    } catch (const std::exception& e) {
-        std::cerr << "Error retrieving tables: " << e.what() << std::endl;
-    }
+        throw TableRepositoryException("SQL Error: " + std::string(e.what()));
+    }   
     return tables;
 }
 
