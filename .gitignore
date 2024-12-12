@@ -4,8 +4,9 @@
 *.o
 *.exe
 *.out
-build/
 bin/
 test.cpp
 secret.txt
 .env
+*.docx
+json/

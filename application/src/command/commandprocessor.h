@@ -5,6 +5,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <functional>
+#include <nlohmann/json.hpp>
 #include "../service/tableservice.h"
 
 class CommandProcessor {
@@ -30,6 +31,7 @@ private:
     void handle_list(const std::istringstream& /*iss*/) const;  
     void handle_help(const std::istringstream& /*iss*/) const; 
     void process_show_all() const;
+    void process_export_to_json(const std::istringstream& iss);
 };
 
 #endif 

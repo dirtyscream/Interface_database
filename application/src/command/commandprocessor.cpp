@@ -2,9 +2,8 @@
 #include <iostream>
 
 CommandProcessor::CommandProcessor(TableService& service) 
-    : table_service(service) {
-
-    command_map = {
+    : table_service(service), 
+      command_map{
         {"use", [this](std::istringstream& iss) { handle_use(iss); }},
         {"create", [this](std::istringstream& iss) { handle_create(iss); }},
         {"drop", [this](std::istringstream& iss) { handle_drop(iss); }},
@@ -14,9 +13,10 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"remove", [this](std::istringstream& iss) { process_remove(iss); }},
         {"update", [this](std::istringstream& iss) { process_update(iss); }},
         {"show", [this](const std::istringstream&) { process_show_all(); }},
-        {"find", [this](std::istringstream& iss) { process_find(iss); }}
-    };
-}
+        {"find", [this](std::istringstream& iss) { process_find(iss); }},
+        {"export", [this](std::istringstream& iss) { process_export_to_json(iss); }} 
+      }
+{}
 
 void CommandProcessor::process_drop_table(std::istringstream& iss) {
     std::string table_name;
@@ -41,6 +41,7 @@ void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "  update <id> <column=value> - Update a record by ID.\n";
     std::cout << "  show all          - Show all records.\n";
     std::cout << "  find <column=value> - Find records matching a condition.\n";
+    std::cout << "  export to json    - Export table data to JSON format.\n"; 
     std::cout << "Navigation:\n";
     std::cout << "  exit               - Exit current context or application.\n";
     std::cout << "  back               - Go back to database context.\n";
@@ -48,17 +49,9 @@ void CommandProcessor::handle_help(const std::istringstream&) const {
 }
 
 void CommandProcessor::process_show_all() const {
-    std::vector<std::string> entries = table_service.show_all_entries(current_table);
-
-    if (entries.empty()) {
-        std::cout << "No entries found or table does not exist.\n";
-        return;
-    }
-
+    TemplateTable<std::string> entries = table_service.show_all_entries(current_table); 
     std::cout << "Entries in table " << current_table << ":\n";
-    for (const auto& entry : entries) {
-        std::cout << entry << '\n';
-    }
+    entries.show_records();
 }
 
 void CommandProcessor::process_command(const std::string& command) {
@@ -177,4 +170,13 @@ void CommandProcessor::process_find(std::istringstream& iss) {
     } else {
         std::cerr << "Error: No condition provided for find." << std::endl;
     }
+}
+
+void CommandProcessor::process_export_to_json(const std::istringstream& iss) {
+    if (current_table.empty()) {
+        std::cout << "No table selected. Use 'use <table_name>' to select a table.\n";
+        return;
+    }
+    nlohmann::json table_data = table_service.export_table_to_json(current_table);
+    std::cout << table_data.dump(4) << std::endl;
 }
