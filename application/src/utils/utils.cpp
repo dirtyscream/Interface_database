@@ -4,7 +4,7 @@
 #include <string>
 
 std::string read_connection_info_from_file(std::string& password, std::string& host, 
-                                            std::string& port, std::string& user, 
+                                            std::string& user, 
                                             std::string& db_name) {
     std::ifstream secret_file("../application/src/utils/secret.txt");
     if (!secret_file) {
@@ -14,10 +14,8 @@ std::string read_connection_info_from_file(std::string& password, std::string& h
 
     std::getline(secret_file, password);
     std::getline(secret_file, host);
-    std::getline(secret_file, port);
     std::getline(secret_file, user);
     std::getline(secret_file, db_name);
-
     return "Connection info read from secret.txt";
 }
 
@@ -34,9 +32,8 @@ std::string get_connection_string() {
             std::string port;
             std::string user;
             std::string db_name;
-            read_connection_info_from_file(password, host, port, user, db_name);
+            read_connection_info_from_file(password, host, user, db_name);
             return "host=" + host + 
-                   " port=" + port + 
                    " dbname=" + db_name + 
                    " user=" + user + 
                    " password=" + password;

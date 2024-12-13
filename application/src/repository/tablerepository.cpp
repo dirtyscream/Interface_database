@@ -6,6 +6,7 @@ void TableRepository::create_table(
     const std::string& table_name,
     const std::vector<std::pair<std::string, std::string>>& columns) {
     std::string query = "CREATE TABLE " + table_name + " (";
+    query += "id SERIAL PRIMARY KEY, ";
     for (const auto& [column_name, column_type] : columns) {
         query += column_name + " " + column_type + ", ";
     }
@@ -46,39 +47,34 @@ void TableRepository::update_entry(
                         "' WHERE id = " + std::to_string(id) + ";";
     db.execute_query(query);
 }
-
-TemplateTable<std::string> TableRepository::show_all_entries(const std::string& table_name) {
-    TemplateTable<std::string> entries;
+std::vector<std::string> TableRepository::show_all_entries(const std::string& table_name) {
+    std::vector<std::string> entries;
     auto column_names = get_column_names(table_name);
     if (column_names.empty()) {
-        std::cerr << "Error: Failed to retrieve columns for table "
-                  << table_name << "." << std::endl;
+        std::cerr << "Error: Failed to retrieve columns for table " << table_name << "." << std::endl;
         return entries;
     }
-
     std::string header;
     for (const auto& col : column_names) {
         header += col + "\t";
     }
-    entries.add_record(header);
-
+    entries.push_back(header);
     std::string query = "SELECT * FROM " + table_name + ";";
     auto result = db.execute_query(query);
     if (result.empty()) {
         std::cerr << "Error: Query returned no results or failed." << std::endl;
         return entries;
     }
-
     for (const auto& row : result) {
         std::string entry;
         for (const auto& field : row) {
             entry += field.as<std::string>() + "\t";
         }
-        entries.add_record(entry);
+        entries.push_back(entry);
     }
-
     return entries;
 }
+
 
 std::vector<std::string> TableRepository::find_entries(
     const std::string& table_name, const std::string& condition) {
@@ -118,20 +114,26 @@ std::vector<std::string> TableRepository::list_tables() {
     return tables;
 }
 
-std::vector<std::string> TableRepository::get_column_names(
-    const std::string& table_name) {
+std::vector<std::string> TableRepository::get_column_names(const std::string& table_name) {
     std::vector<std::string> column_names;
     std::string query =
-        "SELECT column_name FROM information_schema.columns WHERE table_name = "
-        "'" +
-        table_name + "';";
-
+        "SELECT column_name FROM information_schema.columns "
+        "WHERE table_name = '" + table_name + "' "
+        "AND table_schema = 'public' "
+        "ORDER BY ordinal_position;"; 
     auto result = db.execute_query(query);
+    if (result.empty()) {
+        std::cerr << "Error: No columns found for table " << table_name << std::endl;
+        return column_names;
+    }
+
     for (const auto& row : result) {
         column_names.push_back(row[0].as<std::string>());
     }
+
     return column_names;
 }
+
 
 std::vector<std::unordered_map<std::string, std::string>> TableRepository::get_all_entries(const std::string& table_name) {
     std::vector<std::string> column_names = get_column_names(table_name);
@@ -151,4 +153,30 @@ std::vector<std::unordered_map<std::string, std::string>> TableRepository::get_a
         entries.push_back(entry);
     }
     return entries;
+}
+
+void TableRepository::add_relation(const std::string& table_name, const std::string& parent_table, const std::string& column_name) {
+    std::string query = "ALTER TABLE " + table_name + 
+                        " ADD COLUMN " + column_name + 
+                        " INTEGER REFERENCES " + parent_table + "(id);";
+    
+    try {
+        db.execute_query(query);
+        std::cout << "Relation added: " << column_name << " references " << parent_table << "(id).\n";
+    } catch (const std::exception& e) {
+        std::cerr << "Failed to add relation: " << e.what() << '\n';
+    }
+}
+
+
+void TableRepository::start_transaction() {
+    db.begin_transaction();
+}
+
+void TableRepository::end_transaction() {
+    db.end_transaction();
+}
+
+void TableRepository::rollback_transaction() {
+    db.rollback_transaction();
 }

@@ -16,9 +16,15 @@ public:
     void remove_entry(const std::string& table_name, int id);
     void update_entry(const std::string& table_name, int id, const std::pair<std::string, std::string>& column_value);
     void list_tables();
-    TemplateTable<std::string> show_all_entries(const std::string& table_name);
+    std::vector<std::string> show_all_entries(const std::string& table_name);
     std::vector<std::string> find_entries(const std::string& table_name, const std::string& condition);
     nlohmann::json export_table_to_json(const std::string& table_name);
+    void add_relation(const std::string& table_name, const std::string& column_name);
+    std::vector<std::string> get_column_names(const std::string& table_name);
+    void print_entries(std::vector<std::string> entries, std::string current_table);
+    void start_transaction();
+    void end_transaction();
+    void rollback_transaction();
 
 private:
     TableRepository& repo;

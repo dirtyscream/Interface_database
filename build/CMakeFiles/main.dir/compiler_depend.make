@@ -1717,7 +1717,6 @@ CMakeFiles/main.dir/application/src/database/postgre.cpp.o: /Users/danil/Interfa
   /Library/Developer/CommandLineTools/usr/lib/clang/14.0.3/include/stddef.h \
   /Library/Developer/CommandLineTools/usr/lib/clang/14.0.3/include/stdint.h \
   /Users/danil/Interface_database/application/src/database/database.h \
-  /Users/danil/Interface_database/application/src/database/databaseexception.h \
   /Users/danil/Interface_database/application/src/database/postgre.h \
   /opt/homebrew/include/pqxx/array.hxx \
   /opt/homebrew/include/pqxx/binarystring.hxx \
@@ -7025,8 +7024,6 @@ CMakeFiles/main.dir/application/src/utils/utils.cpp.o: /Users/danil/Interface_da
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/ranges_count_if.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__type_traits/is_trivially_destructible.h:
-
-/Users/danil/Interface_database/application/src/database/databaseexception.h:
 
 /Library/Developer/CommandLineTools/SDKs/MacOSX13.3.sdk/usr/include/c++/v1/__algorithm/remove_copy_if.h:
 

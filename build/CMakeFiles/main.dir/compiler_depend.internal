@@ -1719,7 +1719,6 @@ CMakeFiles/main.dir/application/src/database/postgre.cpp.o
  /Library/Developer/CommandLineTools/usr/lib/clang/14.0.3/include/stddef.h
  /Library/Developer/CommandLineTools/usr/lib/clang/14.0.3/include/stdint.h
  /Users/danil/Interface_database/application/src/database/database.h
- /Users/danil/Interface_database/application/src/database/databaseexception.h
  /Users/danil/Interface_database/application/src/database/postgre.h
  /opt/homebrew/include/pqxx/array.hxx
  /opt/homebrew/include/pqxx/binarystring.hxx

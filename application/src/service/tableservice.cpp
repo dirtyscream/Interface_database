@@ -47,12 +47,29 @@ void TableService::update_entry(const std::string& table_name, int id, const std
     repo.update_entry(table_name, id, column_value);
 }
 
-TemplateTable<std::string> TableService::show_all_entries(const std::string& table_name) {
+std::vector<std::string> TableService::show_all_entries(const std::string& table_name) {
     if (table_name.empty()) {
         std::cerr << "Error: Invalid table name." << std::endl;
         return {};
     }
     return repo.show_all_entries(table_name);
+}
+
+void TableService::print_entries(std::vector<std::string> entries, std::string current_table) {
+    if (entries.empty()) {
+        std::cout << "No entries found or table does not exist.\n";
+        return;
+    }
+    std::cout << "\nEntries in table: " << current_table << "\n";
+    for (const auto& entry : entries) {
+        std::istringstream entry_stream(entry);
+        std::string column_value;
+        while (entry_stream >> column_value) {
+            std::cout << "| " << std::setw(15) << std::left << column_value << " ";
+        }
+        std::cout << "|\n";
+    }
+    std::cout << std::string(50, '-') << '\n';
 }
 
 std::vector<std::string> TableService::find_entries(const std::string& table_name, const std::string& condition) {
@@ -103,4 +120,35 @@ void TableService::save_json_to_file(const nlohmann::json& json_data, const std:
     } else {
         std::cerr << "Error while saving: " << filename << std::endl;
     }
+}
+
+void TableService::add_relation(const std::string& table_name, const std::string& column_name) {
+    auto pos = column_name.find("_id");
+    if (pos == std::string::npos) {
+        std::cerr << "Error: Invalid relation column name. It must end with '_id'.\n";
+        return;
+    }
+    std::string parent_table = column_name.substr(0, pos);
+    repo.add_relation(table_name, parent_table, column_name);
+}
+
+std::vector<std::string> TableService::get_column_names(const std::string& table_name) {
+    if (table_name.empty()) {
+        std::cerr << "Error: Invalid table name." << std::endl;
+        return {};
+    }
+    return repo.get_column_names(table_name);
+}
+
+
+void TableService::start_transaction() {
+    repo.start_transaction();
+}
+
+void TableService::end_transaction() {
+    repo.end_transaction();
+}
+
+void TableService::rollback_transaction() {
+    repo.rollback_transaction();
 }

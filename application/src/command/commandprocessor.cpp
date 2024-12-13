@@ -1,9 +1,11 @@
 #include "commandprocessor.h"
 #include <iostream>
+#include <iomanip> 
+#include <cstdlib>
 
 CommandProcessor::CommandProcessor(TableService& service) 
     : table_service(service), 
-      command_map{
+    command_map{
         {"use", [this](std::istringstream& iss) { handle_use(iss); }},
         {"create", [this](std::istringstream& iss) { handle_create(iss); }},
         {"drop", [this](std::istringstream& iss) { handle_drop(iss); }},
@@ -14,9 +16,24 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"update", [this](std::istringstream& iss) { process_update(iss); }},
         {"show", [this](const std::istringstream&) { process_show_all(); }},
         {"find", [this](std::istringstream& iss) { process_find(iss); }},
-        {"export", [this](std::istringstream& iss) { process_export_to_json(iss); }} 
+        {"export", [this](std::istringstream& iss) { process_export_to_json(iss); }},
+        {"back", [this](const std::istringstream&) { current_table.clear(); std::cout << "Exited from table context." << std::endl; }},
+        {"relation", [this](std::istringstream& iss) { process_add_relation(iss); }},
+        {"begin", [this](const std::istringstream&) { process_start_transaction(); }},
+        {"rollback", [this](const std::istringstream&) { process_rollback_transaction(); }},
+        {"end", [this](const std::istringstream&) { process_end_transaction(); }},
+        {"clear", [this](const std::istringstream&) { process_clear(); }},
       }
 {}
+
+void CommandProcessor::process_clear() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+    std::cout << "Terminal cleared.\n";
+}
 
 void CommandProcessor::process_drop_table(std::istringstream& iss) {
     std::string table_name;
@@ -28,30 +45,48 @@ void CommandProcessor::handle_list(const std::istringstream&) const {
     table_service.list_tables();
 }
 
+void CommandProcessor::process_start_transaction() {
+    table_service.start_transaction();
+}
+
+void CommandProcessor::process_end_transaction() {
+    table_service.end_transaction();
+}
+
+void CommandProcessor::process_rollback_transaction() {
+    table_service.rollback_transaction();
+}
+
 void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "Available commands:\n";
     std::cout << "Database commands:\n";
     std::cout << "  use <table_name>     - Switch to specific table context.\n";
-    std::cout << "  create table <table_name> - Create a new table.\n";
+    std::cout << "  create table <table_name> <column> <type> ... - Create a new table.\n";
     std::cout << "  drop table <table_name> - Drop a table.\n";
     std::cout << "  list tables          - List all tables.\n";
     std::cout << "Table commands (after using a table):\n";
     std::cout << "  add <column1=value1> <column2=value2> - Add a record.\n";
+    std::cout << "  add relation <parent_table_id> - Add a relation between tables.\n";
     std::cout << "  remove <id>       - Remove a record by ID.\n";
     std::cout << "  update <id> <column=value> - Update a record by ID.\n";
     std::cout << "  show all          - Show all records.\n";
     std::cout << "  find <column=value> - Find records matching a condition.\n";
     std::cout << "  export to json    - Export table data to JSON format.\n"; 
+    std::cout << "Transaction commands:\n";
+    std::cout << "  begin transaction  - Start a new transaction.\n";
+    std::cout << "  end transaction   - Commit the current transaction.\n";
+    std::cout << "  rollback transaction - Rollback the current transaction.\n";
     std::cout << "Navigation:\n";
     std::cout << "  exit               - Exit current context or application.\n";
     std::cout << "  back               - Go back to database context.\n";
     std::cout << "  help               - Show this help message.\n";
 }
 
+
+
 void CommandProcessor::process_show_all() const {
-    TemplateTable<std::string> entries = table_service.show_all_entries(current_table); 
-    std::cout << "Entries in table " << current_table << ":\n";
-    entries.show_records();
+    std::vector<std::string> entries = table_service.show_all_entries(current_table);
+    table_service.print_entries(entries, current_table);
 }
 
 void CommandProcessor::process_command(const std::string& command) {
@@ -65,6 +100,15 @@ void CommandProcessor::process_command(const std::string& command) {
     } else {
         std::cerr << "Error: Unknown command." << std::endl;
     }
+}
+void CommandProcessor::process_add_relation(std::istringstream& iss) {
+    std::string parent_id;
+    iss >> parent_id;
+    if (parent_id.empty()) {
+        std::cerr << "Error: No parent_id provided for relation." << std::endl;
+        return;
+    }
+    table_service.add_relation(current_table, parent_id);
 }
 
 void CommandProcessor::handle_use(std::istringstream& iss) {

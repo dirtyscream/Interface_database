@@ -18,7 +18,6 @@ private:
     bool exit_flag = false;
     std::string current_table; 
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> command_map;
-
     void handle_use(std::istringstream& iss);
     void handle_create(std::istringstream& iss);
     void handle_drop(std::istringstream& iss);
@@ -32,6 +31,11 @@ private:
     void handle_help(const std::istringstream& /*iss*/) const; 
     void process_show_all() const;
     void process_export_to_json(const std::istringstream& iss);
+    void process_add_relation(std::istringstream& iss);
+    void process_start_transaction();
+    void process_end_transaction();
+    void process_rollback_transaction();
+    void process_clear();
 };
 
 #endif 
