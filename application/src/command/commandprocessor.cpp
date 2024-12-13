@@ -66,9 +66,9 @@ void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "  list tables          - List all tables.\n";
     std::cout << "Table commands (after using a table):\n";
     std::cout << "  add <column1=value1> <column2=value2> - Add a record.\n";
-    std::cout << "  add relation <parent_table_id> - Add a relation between tables.\n";
-    std::cout << "  remove <id>       - Remove a record by ID.\n";
-    std::cout << "  update <id> <column=value> - Update a record by ID.\n";
+    std::cout << "  relation <parent_table_id> - Add a relation between tables.\n";
+    std::cout << "  remove <id>       - Remove a record by id.\n";
+    std::cout << "  update <id> <column=value> - Update a record by id.\n";
     std::cout << "  show all          - Show all records.\n";
     std::cout << "  find <column=value> - Find records matching a condition.\n";
     std::cout << "  export to json    - Export table data to JSON format.\n"; 
@@ -185,7 +185,7 @@ void CommandProcessor::process_remove(std::istringstream& iss) {
     if (iss >> id) {
         table_service.remove_entry(current_table, id);
     } else {
-        std::cerr << "Error: Invalid ID for removal." << std::endl;
+        std::cerr << "Error: Invalid id for removal." << std::endl;
     }
 }
 
@@ -203,7 +203,7 @@ void CommandProcessor::process_update(std::istringstream& iss) {
             std::cerr << "Error: Invalid column=value format for update." << std::endl;
         }
     } else {
-        std::cerr << "Error: Invalid ID for update." << std::endl;
+        std::cerr << "Error: Invalid id for update." << std::endl;
     }
 }
 

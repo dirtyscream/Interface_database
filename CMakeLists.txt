@@ -21,7 +21,6 @@ file(GLOB SOURCES
 
 add_executable(main ${SOURCES})
 
-# Линкуйте библиотеки
 target_link_libraries(main pqxx pq sqlite3 nlohmann_json::nlohmann_json)
 
 add_custom_target(clean-main COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CURRENT_BINARY_DIR}/main)
