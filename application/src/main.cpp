@@ -8,6 +8,12 @@
 
 int main() {
     try {
+        #ifdef _WIN32
+        system("cls");
+        #else
+        system("clear");
+        #endif
+        std::cout << "Welcome to PostgreSQL interface\n";
         PostgresDatabase db;
         std::string conn_str = get_connection_string();
         db.connect(conn_str);

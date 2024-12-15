@@ -10,3 +10,4 @@ secret.txt
 .env
 *.docx
 json/
+build/

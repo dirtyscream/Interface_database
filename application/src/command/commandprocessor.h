@@ -36,6 +36,7 @@ private:
     void process_end_transaction();
     void process_rollback_transaction();
     void process_clear();
+    void process_change_isolation(std::istringstream& iss);
 };
 
 #endif 

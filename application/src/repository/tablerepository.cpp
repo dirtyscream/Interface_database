@@ -49,31 +49,65 @@ void TableRepository::update_entry(
 }
 std::vector<std::string> TableRepository::show_all_entries(const std::string& table_name) {
     std::vector<std::string> entries;
+
+    // Получаем имена колонок
     auto column_names = get_column_names(table_name);
     if (column_names.empty()) {
         std::cerr << "Error: Failed to retrieve columns for table " << table_name << "." << std::endl;
         return entries;
     }
+
+    // Формируем заголовок таблицы
     std::string header;
-    for (const auto& col : column_names) {
-        header += col + "\t";
+    for (size_t i = 0; i < column_names.size(); ++i) {
+        header += column_names[i];
+        if (i < column_names.size() - 1) {
+            header += "\t"; // Разделитель между колонками
+        }
     }
     entries.push_back(header);
+
+    // Формируем запрос к таблице
     std::string query = "SELECT * FROM " + table_name + ";";
     auto result = db.execute_query(query);
+
     if (result.empty()) {
         std::cerr << "Error: Query returned no results or failed." << std::endl;
         return entries;
     }
+
+    // Формируем строки таблицы
     for (const auto& row : result) {
         std::string entry;
-        for (const auto& field : row) {
-            entry += field.as<std::string>() + "\t";
+        for (size_t i = 0; i < row.size(); ++i) {
+            const auto& field = row[i];
+
+            // Проверяем, является ли поле NULL
+            if (field.is_null()) {
+                entry += "NULL";
+            } else {
+                auto value = field.as<std::string>();
+                // Добавляем кавычки для значений с пробелами
+                if (value.find(' ') != std::string::npos) {
+                    entry += "\"" + value + "\"";
+                } else {
+                    entry += value;
+                }
+            }
+
+            // Добавляем разделитель, если это не последний столбец
+            if (i < row.size() - 1) {
+                entry += "\t";
+            }
         }
+
         entries.push_back(entry);
     }
+
     return entries;
 }
+
+
 
 
 std::vector<std::string> TableRepository::find_entries(
@@ -179,4 +213,10 @@ void TableRepository::end_transaction() {
 
 void TableRepository::rollback_transaction() {
     db.rollback_transaction();
+}
+
+
+void TableRepository::set_isolation_level(const std::string& level) {
+    std::string query = "SET TRANSACTION ISOLATION LEVEL " + level + ";";
+    db.execute_query(query);
 }

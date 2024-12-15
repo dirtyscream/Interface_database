@@ -6,6 +6,7 @@ void PostgresDatabase::connect(const std::string& conn_str) {
         if (!conn->is_open()) {
             throw std::runtime_error("Connection to database failed");
         }
+        std::cout << "Connected to database successfully." << std::endl;
     } catch (const std::exception& e) {
         std::cerr << "Error connecting to database: " << e.what() << std::endl;
         throw;

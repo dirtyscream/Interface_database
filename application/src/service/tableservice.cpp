@@ -23,13 +23,44 @@ void TableService::drop_table(const std::string& table_name) {
     repo.drop_table(table_name);
 }
 
-void TableService::add_entry(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& entry) {
-    if (table_name.empty() || entry.empty()) {
-        std::cerr << "Error: Invalid table name or entry." << std::endl;
-        return;
+bool TableService::add_entry(const std::string& table_name, const std::string& input_line) {
+    if (table_name.empty() || input_line.empty()) {
+        std::cerr << "Error: Invalid table name or input data." << std::endl;
+        return false;
+    }
+    std::vector<std::pair<std::string, std::string>> entry;
+    std::istringstream line_stream(input_line);
+    std::string token;
+    std::string current_column;
+    std::string current_value;
+    while (std::getline(line_stream, token, ' ')) {
+        size_t pos = token.find('=');
+        if (pos != std::string::npos) {
+            if (!current_column.empty()) {
+                entry.emplace_back(current_column, current_value);
+                current_column.clear();
+                current_value.clear();
+            }
+
+            current_column = token.substr(0, pos);
+            current_value = token.substr(pos + 1);
+        } else if (!current_column.empty()) {
+            current_value += " " + token;
+        }
+    }
+    if (!current_column.empty()) {
+        entry.emplace_back(current_column, current_value);
+    }
+
+    if (entry.empty()) {
+        std::cerr << "Error: No valid column=value pairs found." << std::endl;
+        return false;
     }
     repo.add_entry(table_name, entry);
+    return true;
 }
+
+
 
 void TableService::remove_entry(const std::string& table_name, int id) {
     if (table_name.empty()) {
@@ -54,23 +85,39 @@ std::vector<std::string> TableService::show_all_entries(const std::string& table
     }
     return repo.show_all_entries(table_name);
 }
-
-void TableService::print_entries(std::vector<std::string> entries, std::string current_table) {
+void TableService::print_entries(const std::vector<std::string>& entries, const std::string& current_table) {
     if (entries.empty()) {
         std::cout << "No entries found or table does not exist.\n";
         return;
     }
+    auto column_names = repo.get_column_names(current_table);
+    if (column_names.empty()) {
+        std::cerr << "Error: Failed to retrieve column names for table " << current_table << ".\n";
+        return;
+    }
     std::cout << "\nEntries in table: " << current_table << "\n";
+    for (const auto& column_name : column_names) {
+        std::cout << "| " << std::setw(15) << std::left << column_name << " ";
+    }
+    std::cout << "|\n" << std::string(column_names.size() * 18, '-') << '\n';
     for (const auto& entry : entries) {
         std::istringstream entry_stream(entry);
-        std::string column_value;
-        while (entry_stream >> column_value) {
-            std::cout << "| " << std::setw(15) << std::left << column_value << " ";
+        std::string value;
+        for (size_t i = 0; i < column_names.size(); ++i) {
+            if (std::getline(entry_stream, value, '\t')) {
+                if (value.front() == '"' && value.back() == '"') {
+                    value = value.substr(1, value.length() - 2);
+                }
+                std::cout << "| " << std::setw(15) << std::left << value << " ";
+            } else {
+                std::cout << "| " << std::setw(15) << std::left << "NULL" << " ";
+            }
         }
         std::cout << "|\n";
     }
-    std::cout << std::string(50, '-') << '\n';
+    std::cout << std::string(column_names.size() * 18, '-') << '\n';
 }
+
 
 std::vector<std::string> TableService::find_entries(const std::string& table_name, const std::string& condition) {
     if (table_name.empty() || condition.empty()) {
@@ -151,4 +198,15 @@ void TableService::end_transaction() {
 
 void TableService::rollback_transaction() {
     repo.rollback_transaction();
+}
+
+void TableService::change_isolation_level(const std::string& level) {
+    static const std::vector<std::string> valid_levels = {
+        "READ UNCOMMITTED", "READ COMMITTED", "REPEATABLE READ", "SERIALIZABLE"
+    };
+
+    if (std::find(valid_levels.begin(), valid_levels.end(), level) == valid_levels.end()) {
+        throw std::invalid_argument("Invalid isolation level: " + level);
+    }
+    repo.set_isolation_level(level);
 }

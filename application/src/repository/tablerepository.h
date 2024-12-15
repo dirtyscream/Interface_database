@@ -19,6 +19,7 @@ public:
     void start_transaction();
     void end_transaction();
     void rollback_transaction();
+    void set_isolation_level(const std::string& level);
     std::vector<std::string> show_all_entries(const std::string& table_name);
     std::vector<std::string> find_entries(const std::string& table_name, const std::string& condition);
     std::vector<std::string> list_tables();

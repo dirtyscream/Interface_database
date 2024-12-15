@@ -23,6 +23,7 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"rollback", [this](const std::istringstream&) { process_rollback_transaction(); }},
         {"end", [this](const std::istringstream&) { process_end_transaction(); }},
         {"clear", [this](const std::istringstream&) { process_clear(); }},
+        {"isolation", [this](std::istringstream& iss) { process_change_isolation(iss); }},
       }
 {}
 
@@ -76,6 +77,7 @@ void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "  begin transaction  - Start a new transaction.\n";
     std::cout << "  end transaction   - Commit the current transaction.\n";
     std::cout << "  rollback transaction - Rollback the current transaction.\n";
+    std::cout << "  isolation - Change isolation level (1 - READ UNCOMMITTED, 2 - READ COMMITTED, 3 - REPEATABLE READ, 4 - SERIALIZABLE).\n";
     std::cout << "Navigation:\n";
     std::cout << "  exit               - Exit current context or application.\n";
     std::cout << "  back               - Go back to database context.\n";
@@ -162,21 +164,16 @@ void CommandProcessor::process_create_table(std::istringstream& iss) {
 }
 
 void CommandProcessor::process_add(std::istringstream& iss) {
-    std::vector<std::pair<std::string, std::string>> entry;
-    std::string column_value;
-    while (iss >> column_value) {
-        size_t pos = column_value.find('=');
-        if (pos != std::string::npos) {
-            std::string column = column_value.substr(0, pos);
-            std::string value = column_value.substr(pos + 1);
-            entry.emplace_back(column, value);
-        }
+    std::string input_line;
+    std::getline(iss, input_line); 
+
+    if (input_line.empty()) {
+        std::cerr << "Error: No data provided for add command." << std::endl;
+        return;
     }
-    
-    if (!entry.empty()) {
-        table_service.add_entry(current_table, entry);
-    } else {
-        std::cerr << "Error: No column=value pairs provided for adding entry." << std::endl;
+
+    if (!table_service.add_entry(current_table, input_line)) {
+        std::cerr << "Error: Failed to add entry to the table." << std::endl;
     }
 }
 
@@ -223,4 +220,39 @@ void CommandProcessor::process_export_to_json(const std::istringstream& iss) {
     }
     nlohmann::json table_data = table_service.export_table_to_json(current_table);
     std::cout << table_data.dump(4) << std::endl;
+}
+
+
+void CommandProcessor::process_change_isolation(std::istringstream& iss) {
+    std::cout << "Select transaction isolation level:\n";
+    std::cout << "1. READ UNCOMMITTED\n";
+    std::cout << "2. READ COMMITTED\n";
+    std::cout << "3. REPEATABLE READ\n";
+    std::cout << "4. SERIALIZABLE\n";
+    int choice;
+    iss >> choice;
+    std::string level;
+    switch (choice) {
+        case 1:
+            level = "READ UNCOMMITTED";
+            break;
+        case 2:
+            level = "READ COMMITTED";
+            break;
+        case 3:
+            level = "REPEATABLE READ";
+            break;
+        case 4:
+            level = "SERIALIZABLE";
+            break;
+        default:
+            std::cerr << "Invalid selection. Please choose a number between 1 and 4.\n";
+            return;
+    }
+    try {
+        table_service.change_isolation_level(level);
+        std::cout << "Transaction isolation level successfully set to: " << level << ".\n";
+    } catch (const std::invalid_argument& e) {
+        std::cerr << "Error: " << e.what() << "\n";
+    }
 }
