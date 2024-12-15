@@ -1,4 +1,0 @@
-/Users/danil/Interface_database/build/CMakeFiles/main.dir
-/Users/danil/Interface_database/build/CMakeFiles/clean-main.dir
-/Users/danil/Interface_database/build/CMakeFiles/edit_cache.dir
-/Users/danil/Interface_database/build/CMakeFiles/rebuild_cache.dir
