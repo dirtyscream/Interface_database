@@ -8,4 +8,4 @@
 void show_help();
 std::string get_connection_string();
 
-#endif // UTILS_H
+#endif

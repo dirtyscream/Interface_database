@@ -2,6 +2,7 @@
 #define POSTGRESDATABASE_H
 
 #include "database.h"
+#include "databaseexception.h"
 #include <pqxx/pqxx>
 #include <stdexcept>
 #include <iostream>

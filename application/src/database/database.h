@@ -4,7 +4,7 @@
 #include <string>
 #include <pqxx/pqxx>
 
-class Database {
+class Database {    
 public:
     virtual void connect(const std::string& conn_str) = 0;
     virtual pqxx::result execute_query(const std::string& query) = 0;

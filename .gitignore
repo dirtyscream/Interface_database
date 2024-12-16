@@ -11,3 +11,5 @@ secret.txt
 *.docx
 json/
 build/
+*.odg
+Записка/

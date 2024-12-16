@@ -4,14 +4,19 @@ void PostgresDatabase::connect(const std::string& conn_str) {
     try {
         conn = std::make_unique<pqxx::connection>(conn_str);
         if (!conn->is_open()) {
-            throw std::runtime_error("Connection to database failed");
+            throw DatabaseException("Connection to database failed");
         }
         std::cout << "Connected to database successfully." << std::endl;
-    } catch (const std::exception& e) {
+    } catch (const DatabaseException& e) {
+        e.log_error(); 
         std::cerr << "Error connecting to database: " << e.what() << std::endl;
+        throw; 
+    } catch (const std::exception& e) {
+        std::cerr << "Unexpected error: " << e.what() << std::endl;
         throw;
     }
 }
+
 
 pqxx::result PostgresDatabase::execute_query(const std::string& query) {
     if (!conn) {
