@@ -24,8 +24,13 @@ CommandProcessor::CommandProcessor(TableService& service)
         {"end", [this](const std::istringstream&) { process_end_transaction(); }},
         {"clear", [this](const std::istringstream&) { process_clear(); }},
         {"isolation", [this](std::istringstream& iss) { process_change_isolation(iss); }},
+        {"convert", [this](std::istringstream& iss) { process_generate_uml(); }},
       }
 {}
+
+void CommandProcessor::process_generate_uml() {
+    table_service.convert_to_diagram();
+}
 
 void CommandProcessor::process_clear() {
 #ifdef _WIN32
@@ -65,6 +70,7 @@ void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "  create table <table_name> <column> <type> ... - Create a new table.\n";
     std::cout << "  drop table <table_name> - Drop a table.\n";
     std::cout << "  list tables          - List all tables.\n";
+    std::cout << "  convert to uml       - Converting database into uml diagram\n";
     std::cout << "Table commands (after using a table):\n";
     std::cout << "  add <column1=value1> <column2=value2> - Add a record.\n";
     std::cout << "  relation <parent_table_id> - Add a relation between tables.\n";
@@ -83,7 +89,6 @@ void CommandProcessor::handle_help(const std::istringstream&) const {
     std::cout << "  back               - Go back to database context.\n";
     std::cout << "  help               - Show this help message.\n";
 }
-
 
 
 void CommandProcessor::process_show_all() const {

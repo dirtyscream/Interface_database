@@ -17,6 +17,7 @@ file(GLOB SOURCES
     "application/src/service/*.cpp"
     "application/src/template/*.cpp"
     "application/src/utils/*.cpp"
+    "application/src/umlconverter/*cpp"
 )
 
 add_executable(main ${SOURCES})

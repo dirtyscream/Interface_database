@@ -5,11 +5,13 @@
 #include <string>
 #include "../repository/tablerepository.h"
 #include <nlohmann/json.hpp>
-#include "../template/templatetable.h"
+#include "../template/table.h"
+#include "../umlconverter/converter.h"
+
 
 class TableService {
 public:
-    explicit TableService(TableRepository& repository);
+    explicit TableService(TableRepository& repository, DatabaseConverter& converter);
     void create_table(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& columns);
     void drop_table(const std::string& table_name);
     bool add_entry(const std::string& table_name, const std::string& input_line);
@@ -22,14 +24,15 @@ public:
     void add_relation(const std::string& table_name, const std::string& column_name);
     std::vector<std::string> get_column_names(const std::string& table_name);
     void print_entries(const std::vector<std::string>& entries, const std::string& current_table);
-
     void start_transaction();
     void end_transaction();
     void rollback_transaction();
     void change_isolation_level(const std::string& level);
+    void convert_to_diagram();
 
 private:
     TableRepository& repo;
+    DatabaseConverter& converter;
     void save_json_to_file(const nlohmann::json& json_data, const std::string& table_name);
 };
 

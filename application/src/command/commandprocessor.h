@@ -18,6 +18,7 @@ private:
     bool exit_flag = false;
     std::string current_table; 
     std::unordered_map<std::string, std::function<void(std::istringstream&)>> command_map;
+
     void handle_use(std::istringstream& iss);
     void handle_create(std::istringstream& iss);
     void handle_drop(std::istringstream& iss);
@@ -37,6 +38,7 @@ private:
     void process_rollback_transaction();
     void process_clear();
     void process_change_isolation(std::istringstream& iss);
+    void process_generate_uml();
 };
 
-#endif 
+#endif

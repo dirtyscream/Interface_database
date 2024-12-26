@@ -17,8 +17,9 @@ int main() {
         PostgresDatabase db;
         std::string conn_str = get_connection_string();
         db.connect(conn_str);
+        DatabaseConverter converter(conn_str);
         TableRepository repository(db);
-        TableService table_service(repository);
+        TableService table_service(repository, converter);
         CommandProcessor command_processor(table_service);
         std::string command;
         while (true) {

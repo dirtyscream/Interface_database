@@ -2,10 +2,105 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
+#include <regex>
 
 namespace fs = std::filesystem;
 
-TableService::TableService(TableRepository& repository) : repo(repository) {}
+std::vector<Table> parse_dump(const std::string& dumpFilePath) {
+    std::ifstream file(dumpFilePath);
+    if (!file.is_open()) {
+        throw std::runtime_error("Failed to open the dump file: " + dumpFilePath);
+    }
+    std::vector<Table> tables;
+    std::string line;
+    Table currentTable;
+    std::regex tableRegex(R"(CREATE TABLE (\w+)\.(\w+))");
+    std::regex columnRegex(R"(^\s*(\w+)\s+(\w+))");
+    std::regex primaryKeyRegex(R"(CONSTRAINT \w+ PRIMARY KEY \(([^)]+)\))");
+    std::regex foreignKeyRegex(R"(FOREIGN KEY \(([^)]+)\) REFERENCES (\w+)\.(\w+))");
+
+    while (std::getline(file, line)) {
+        std::smatch match;
+        if (line.find("ALTER") != std::string::npos || 
+            line.find("CREATE SEQUENCE") != std::string::npos || 
+            line.find("DEFAULT PRIVILEGES") != std::string::npos ||
+            line.find("NO") != std::string::npos || 
+            line.find("CACHE") != std::string::npos || 
+            line.find("AS") != std::string::npos || 
+            line.find("START") != std::string::npos || 
+            line.find("INCREMENT") != std::string::npos || 
+            line.find("ADD") != std::string::npos) {
+            continue;
+        }
+        if (std::regex_search(line, match, tableRegex)) {
+            if (!currentTable.name.empty()) {
+                tables.push_back(currentTable);
+                currentTable = Table{};
+            }
+            currentTable.name = match[2];  
+        } 
+        else if (currentTable.name.empty()) {
+            continue;
+        } 
+        else if (std::regex_search(line, match, columnRegex)) {
+            Column col;
+            col.name = match[1];
+            col.type = match[2];  
+            currentTable.columns.push_back(col);
+        } 
+        else if (std::regex_search(line, match, primaryKeyRegex)) {
+            std::stringstream pkStream(match[1]);
+            std::string pk;
+            while (std::getline(pkStream, pk, ',')) {
+                pk.erase(pk.find_last_not_of(" \t\n\r\f\v") + 1); 
+                pk.erase(0, pk.find_first_not_of(" \t\n\r\f\v")); 
+                currentTable.primary_keys.push_back(pk);
+            }
+        } 
+        else if (std::regex_search(line, match, foreignKeyRegex)) {
+            std::string fkColumn = match[1];    
+            std::string referencedTable = match[2]; 
+            currentTable.foreign_keys.emplace_back(fkColumn, referencedTable);
+        }
+    }
+    if (!currentTable.name.empty()) {
+        tables.push_back(currentTable);
+    }
+
+    file.close();
+    return tables;
+}
+
+
+void TableService::convert_to_diagram() {
+    try {
+        std::string output_file;  
+        if (!converter.dump_database(output_file)) {
+            throw std::runtime_error("Error while exporting database");
+        }
+        if (output_file.empty()) {
+            throw std::runtime_error("Schemas file was not generated.");
+        }
+        std::filesystem::path output_path = output_file;
+        if (!std::filesystem::exists(output_path)) {
+            throw std::runtime_error("File of shema is not exists.");
+        }
+        std::vector<Table> tables = parse_dump(output_path);
+        if (std::filesystem::file_size(output_path) == 0) {
+            throw std::runtime_error("Generated file is empty.");
+        }
+        std::cout << "Generated database schema file was succesfully imported into file: " << output_file << std::endl;
+        std::string uml_file = output_file + ".uml";
+        converter.generate_uml(tables, uml_file);
+    } catch (const std::exception& e) {
+        std::cerr << "Ошибка: " << e.what() << std::endl;
+    }
+}
+
+
+TableService::TableService(TableRepository& repository, DatabaseConverter& converter)
+    : repo(repository), converter(converter) {
+}
 
 void TableService::create_table(const std::string& table_name, const std::vector<std::pair<std::string, std::string>>& columns) {
     if (table_name.empty() || columns.empty()) {
